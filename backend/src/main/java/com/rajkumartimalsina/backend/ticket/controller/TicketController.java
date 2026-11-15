@@ -1,6 +1,8 @@
 package com.rajkumartimalsina.backend.ticket.controller;
 
 import com.rajkumartimalsina.backend.common.response.ApiResponse;
+import com.rajkumartimalsina.backend.message.dto.MessageCreateRequest;
+import com.rajkumartimalsina.backend.message.dto.MessageResponse;
 import com.rajkumartimalsina.backend.ticket.dto.*;
 import com.rajkumartimalsina.backend.ticket.enums.TicketCategory;
 import com.rajkumartimalsina.backend.ticket.enums.TicketStatus;
@@ -15,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -73,5 +76,21 @@ public class TicketController {
     ) {
         TicketResponse updated = ticketService.updateCategory(id, request.category());
         return ResponseEntity.ok(ApiResponse.success("Ticket category updated successfully", updated));
+    }
+
+    @GetMapping("/{id}/messages")
+    public ResponseEntity<ApiResponse<List<MessageResponse>>> getTicketMessages(@PathVariable UUID id) {
+        List<MessageResponse> messages = ticketService.getTicketMessages(id);
+        return ResponseEntity.ok(ApiResponse.success(messages));
+    }
+
+    @PostMapping("/{id}/messages")
+    public ResponseEntity<ApiResponse<MessageResponse>> sendAdminReply(
+            @PathVariable UUID id,
+            @Valid @RequestBody MessageCreateRequest request
+    ) {
+        MessageResponse reply = ticketService.sendAdminReply(id, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Admin reply sent and emailed to customer", reply));
     }
 }

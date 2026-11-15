@@ -5,6 +5,9 @@ import com.rajkumartimalsina.backend.common.exception.ResourceNotFoundException;
 import com.rajkumartimalsina.backend.customer.entity.CustomerEntity;
 import com.rajkumartimalsina.backend.customer.repository.CustomerRepository;
 import com.rajkumartimalsina.backend.customer.service.CustomerService;
+import com.rajkumartimalsina.backend.email.dto.EmailSendRequest;
+import com.rajkumartimalsina.backend.email.service.EmailService;
+import com.rajkumartimalsina.backend.message.dto.MessageCreateRequest;
 import com.rajkumartimalsina.backend.message.dto.MessageResponse;
 import com.rajkumartimalsina.backend.message.entity.MessageEntity;
 import com.rajkumartimalsina.backend.message.enums.MessageSenderType;
@@ -35,6 +38,7 @@ public class TicketService {
     private final CustomerRepository customerRepository;
     private final CustomerService customerService;
     private final MessageRepository messageRepository;
+    private final EmailService emailService;
 
     @Transactional(readOnly = true)
     public Page<TicketResponse> getTickets(
@@ -217,5 +221,66 @@ public class TicketService {
                 .build();
 
         return messageRepository.save(message);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MessageResponse> getTicketMessages(UUID ticketId) {
+        if (!ticketRepository.existsById(ticketId)) {
+            throw new ResourceNotFoundException("Ticket not found with id: " + ticketId);
+        }
+        return messageRepository.findByTicketIdOrderByCreatedAtAsc(ticketId)
+                .stream()
+                .map(MessageResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public MessageResponse sendAdminReply(UUID ticketId, MessageCreateRequest request) {
+        TicketEntity ticket = ticketRepository.findByIdWithCustomer(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + ticketId));
+
+        // Save admin message
+        MessageEntity message = MessageEntity.builder()
+                .ticket(ticket)
+                .senderType(MessageSenderType.ADMIN)
+                .body(request.body().trim())
+                .isAiGenerated(false)
+                .createdAt(Instant.now())
+                .build();
+        MessageEntity savedMessage = messageRepository.save(message);
+
+        // Transition ticket status
+        if (request.resolveTicket()) {
+            ticket.setStatus(TicketStatus.RESOLVED);
+            log.info("Ticket '{}' marked as RESOLVED by admin.", ticketId);
+        } else if (ticket.getStatus() == TicketStatus.NEW || ticket.getStatus() == TicketStatus.ESCALATED_TO_HUMAN) {
+            ticket.setStatus(TicketStatus.IN_PROGRESS);
+            log.info("Ticket '{}' transitioned to IN_PROGRESS by admin.", ticketId);
+        }
+        ticketRepository.save(ticket);
+
+        // Find latest inbound Message-ID for threading headers
+        List<MessageEntity> existingMessages = messageRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
+        String inReplyTo = existingMessages.stream()
+                .map(MessageEntity::getInboundMessageId)
+                .filter(Objects::nonNull)
+                .reduce((first, second) -> second)
+                .orElse(null);
+
+        // Dispatch outbound email to customer
+        String customerEmail = ticket.getCustomer().getEmail();
+        String emailSubject = "Re: [Ticket #" + ticket.getId() + "] " + ticket.getSubject();
+        List<String> references = inReplyTo != null ? List.of(inReplyTo) : List.of();
+
+        emailService.sendEmail(new EmailSendRequest(
+                customerEmail,
+                emailSubject,
+                request.body().trim(),
+                inReplyTo,
+                references
+        ));
+
+        log.info("Admin reply sent and emailed to '{}' for ticket '{}'", customerEmail, ticketId);
+        return MessageResponse.fromEntity(savedMessage);
     }
 }
