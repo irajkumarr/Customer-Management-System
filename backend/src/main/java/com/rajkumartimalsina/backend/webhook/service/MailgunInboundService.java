@@ -8,7 +8,7 @@ import com.rajkumartimalsina.backend.message.repository.MessageRepository;
 import com.rajkumartimalsina.backend.ticket.entity.TicketEntity;
 import com.rajkumartimalsina.backend.ticket.repository.TicketRepository;
 import com.rajkumartimalsina.backend.ticket.service.TicketService;
-import com.rajkumartimalsina.backend.webhook.dto.InboundEmailPayload;
+import com.rajkumartimalsina.backend.webhook.dto.MailgunInboundPayload;
 import com.rajkumartimalsina.backend.webhook.dto.ParsedEmailHeaders;
 import com.rajkumartimalsina.backend.webhook.dto.ParsedEmailSender;
 import com.rajkumartimalsina.backend.webhook.dto.WebhookProcessingResult;
@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SendGridInboundService {
+public class MailgunInboundService {
 
     private static final Pattern TICKET_ID_SUBJECT_PATTERN = Pattern.compile("\\[(?:Ticket\\s*#|#)([a-f0-9\\-]{36})\\]", Pattern.CASE_INSENSITIVE);
 
@@ -37,11 +37,16 @@ public class SendGridInboundService {
     private final TicketAiProcessingService ticketAiProcessingService;
 
     @Transactional
-    public WebhookProcessingResult processInboundEmail(InboundEmailPayload payload) {
-        ParsedEmailHeaders headers = headerParser.extractHeaders(payload.headers());
+    public WebhookProcessingResult processInboundEmail(MailgunInboundPayload payload) {
+        ParsedEmailHeaders headers = headerParser.extractHeaders(
+                payload.messageHeaders(),
+                payload.messageId(),
+                payload.inReplyTo(),
+                payload.references()
+        );
 
         // Extract sender
-        String fromHeader = headers.from() != null && !headers.from().isBlank() ? headers.from() : payload.from();
+        String fromHeader = resolveFrom(payload.from(), payload.sender(), headers.from());
         ParsedEmailSender sender = headerParser.parseSender(fromHeader);
 
         // Deduplication: prevent processing duplicate inbound messages
@@ -58,12 +63,12 @@ public class SendGridInboundService {
             );
         }
 
-        // Determine plain text body content
-        String body = resolveBody(payload.text(), payload.html());
-        String subject = headers.subject() != null && !headers.subject().isBlank() ? headers.subject() : payload.subject();
-        if (subject == null || subject.isBlank()) {
-            subject = "No Subject";
-        }
+        // Determine plain text body content (stripped-text is preferred to avoid repeating quote history)
+        String body = resolveBody(payload.strippedText(), payload.bodyPlain(), payload.strippedHtml(), payload.bodyHtml());
+
+        String subject = payload.subject() != null && !payload.subject().isBlank()
+                ? payload.subject()
+                : (headers.subject() != null && !headers.subject().isBlank() ? headers.subject() : "No Subject");
 
         // Thread matching
         Optional<TicketEntity> matchedTicket = findMatchingTicket(headers, subject);
@@ -126,13 +131,29 @@ public class SendGridInboundService {
         return Optional.empty();
     }
 
-    private String resolveBody(String text, String html) {
-        if (text != null && !text.isBlank()) {
-            return text.trim();
+    private String resolveFrom(String from, String sender, String headerFrom) {
+        if (from != null && !from.isBlank()) {
+            return from;
         }
-        if (html != null && !html.isBlank()) {
-            // Basic HTML strip to plain text
-            return html
+        if (sender != null && !sender.isBlank()) {
+            return sender;
+        }
+        if (headerFrom != null && !headerFrom.isBlank()) {
+            return headerFrom;
+        }
+        return "unknown@example.com";
+    }
+
+    private String resolveBody(String strippedText, String bodyPlain, String strippedHtml, String bodyHtml) {
+        if (strippedText != null && !strippedText.isBlank()) {
+            return strippedText.trim();
+        }
+        if (bodyPlain != null && !bodyPlain.isBlank()) {
+            return bodyPlain.trim();
+        }
+        String htmlSource = (strippedHtml != null && !strippedHtml.isBlank()) ? strippedHtml : bodyHtml;
+        if (htmlSource != null && !htmlSource.isBlank()) {
+            return htmlSource
                     .replaceAll("<[^>]*>", "")
                     .replace("&nbsp;", " ")
                     .replace("&amp;", "&")

@@ -4,7 +4,7 @@
 
 - **No WebSockets, No SSE, No Polling.** The frontend relies strictly on manual refresh (Pull-to-Refresh / Refresh Button) via standard REST APIs.
 - **Single Admin User.** Do NOT implement JWT or complex OAuth. Use standard Spring Security Session-based authentication (`JSESSIONID`) with a single hardcoded or DB-stored admin row.
-- **Email Provider:** SendGrid ONLY. Use Inbound Parse for webhooks and the SendGrid Java SDK for outbound emails.
+- **Email Provider:** Mailgun ONLY. Use Mailgun Routes / Webhooks for inbound ingestion and Mailgun Messages REST API for outbound emails.
 
 ## Tech Stack Enforcement
 

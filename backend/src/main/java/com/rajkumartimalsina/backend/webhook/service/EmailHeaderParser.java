@@ -1,5 +1,7 @@
 package com.rajkumartimalsina.backend.webhook.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rajkumartimalsina.backend.webhook.dto.ParsedEmailHeaders;
 import com.rajkumartimalsina.backend.webhook.dto.ParsedEmailSender;
 import org.springframework.stereotype.Component;
@@ -16,10 +18,35 @@ public class EmailHeaderParser {
     private static final Pattern SENDER_PATTERN = Pattern.compile("^(?:[\"']?([^\"'<]*)[\"']?\\s*)?<?([^\\s<>]+@[^\\s<>]+)>?$");
     private static final Pattern MESSAGE_ID_PATTERN = Pattern.compile("<([^>]+)>");
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     public Map<String, String> parseRawHeaders(String rawHeaders) {
         Map<String, String> headerMap = new LinkedHashMap<>();
         if (rawHeaders == null || rawHeaders.isBlank()) {
             return headerMap;
+        }
+
+        String trimmed = rawHeaders.trim();
+
+        // Support Mailgun JSON format: [["Header-Name", "Header-Value"], ...]
+        if (trimmed.startsWith("[")) {
+            try {
+                JsonNode root = objectMapper.readTree(trimmed);
+                if (root.isArray()) {
+                    for (JsonNode pair : root) {
+                        if (pair.isArray() && pair.size() >= 2) {
+                            String headerName = pair.get(0).asText();
+                            String headerValue = pair.get(1).asText();
+                            if (headerName != null && !headerName.isBlank()) {
+                                headerMap.put(headerName.toLowerCase(Locale.ROOT), headerValue != null ? headerValue.trim() : "");
+                            }
+                        }
+                    }
+                    return headerMap;
+                }
+            } catch (Exception ignored) {
+                // Fall back to line-by-line RFC 2822 parsing
+            }
         }
 
         try (BufferedReader reader = new BufferedReader(new StringReader(rawHeaders))) {
@@ -58,11 +85,27 @@ public class EmailHeaderParser {
     }
 
     public ParsedEmailHeaders extractHeaders(String rawHeaders) {
+        return extractHeaders(rawHeaders, null, null, null);
+    }
+
+    public ParsedEmailHeaders extractHeaders(String rawHeaders, String directMessageId, String directInReplyTo, String directReferences) {
         Map<String, String> headers = parseRawHeaders(rawHeaders);
 
-        String messageId = normalizeMessageId(headers.get("message-id"));
-        String inReplyTo = normalizeMessageId(headers.get("in-reply-to"));
-        List<String> references = parseReferences(headers.get("references"));
+        String rawMsgId = directMessageId != null && !directMessageId.isBlank()
+                ? directMessageId
+                : headers.get("message-id");
+        String messageId = normalizeMessageId(rawMsgId);
+
+        String rawInReplyTo = directInReplyTo != null && !directInReplyTo.isBlank()
+                ? directInReplyTo
+                : headers.get("in-reply-to");
+        String inReplyTo = normalizeMessageId(rawInReplyTo);
+
+        String rawReferences = directReferences != null && !directReferences.isBlank()
+                ? directReferences
+                : headers.get("references");
+        List<String> references = parseReferences(rawReferences);
+
         String subject = headers.get("subject");
         String from = headers.get("from");
 

@@ -7,7 +7,7 @@ Implement the backend for the Customer Management System (AI Helpdesk) described
 - Spring Boot 4, Java 17, Spring MVC, Spring Data JPA, Spring Security.
 - PostgreSQL with the `pgvector` extension.
 - Session-based authentication for one Admin account. Use Spring Security's `JSESSIONID`; do not introduce JWT.
-- SendGrid Inbound Parse receives customer emails; SendGrid API sends replies.
+- Mailgun Inbound Routes/Webhooks receive customer emails; Mailgun Messages API sends replies.
 - Google Gemini through Spring AI handles chat and embeddings.
 - REST endpoints are consumed by a Flutter Web dashboard.
 - Ticket categories: `BILLING`, `TECHNICAL`, `ACCOUNT`, `GENERAL`, `UNKNOWN`.
@@ -121,36 +121,32 @@ Requirements:
 - Never let AI mark a ticket `RESOLVED` or `CLOSED`.
 - Record human actions and AI actions as messages/events with sender type and timestamps.
 - Ensure status/category updates and message persistence are transactionally consistent.
-- Avoid holding a database transaction open while waiting for Gemini or SendGrid network calls.
+- Avoid holding a database transaction open while waiting for Gemini or Mailgun network calls.
 
-## 5. SendGrid Inbound Parse webhook
-The endpoint receives `multipart/form-data`. Do not assume it is JSON.
+## 5. Mailgun Inbound Webhook / Route
+The endpoint receives `multipart/form-data` or `application/x-www-form-urlencoded`.
 
-- Map and validate the documented fields, including `from`, `to`, `subject`, `text`, `html`, `headers`, and attachment metadata/files as applicable.
+- Map and validate the documented fields, including `from`, `sender`, `recipient`, `subject`, `body-plain`, `stripped-text`, `body-html`, `message-headers`, and `Message-Id`.
 - Prefer text content for AI input; sanitize/strip HTML before using it as fallback. Preserve the original message body for the message record according to retention requirements.
-- Parse headers using a proper email/header parser where possible. Header names are case-insensitive and may be folded.
+- Parse headers using a proper email/header parser where possible. Header names are case-insensitive and may be folded or formatted as JSON arrays.
 - Parse `Message-ID`, `In-Reply-To`, and `References`. Normalize message IDs consistently (including angle brackets and whitespace) before lookup.
 - Match a reply to an existing ticket using `In-Reply-To` first and `References` as a fallback. Store inbound message IDs with a uniqueness constraint to prevent duplicate ingestion.
 - If no matching thread exists, create a new ticket.
 - Treat missing or malformed fields as validation failures; do not create corrupt records.
-- Enforce request size, attachment count, and allowed attachment size/type limits. Do not trust file names or MIME types supplied by the sender.
+- Enforce request size and attachment limits. Do not trust file names or MIME types supplied by the sender.
 - Return a successful webhook response only after the inbound event is durably accepted. For long-running AI processing, persist the message and enqueue/dispatch processing after commit.
 
 ### Webhook authentication — important
-- Configure and enable **Inbound Parse security policy** in SendGrid (signature verification and/or OAuth).
-- For signature verification, use the exact raw request bytes and the documented Inbound Parse signature headers/public key. Multipart parsing or re-serialization before verification can invalidate the signature.
-- Use the official SendGrid Java SDK helper only if it supports the Inbound Parse signature format and raw multipart payload requirements for the SDK version in use. Verify this explicitly; do not blindly reuse Event Webhook examples.
-- Keep the verification public key/configuration outside source control and support key rotation.
+- Configure and enable **Webhook signing key verification** in Mailgun.
+- For signature verification, compute HMAC-SHA256 over `timestamp + token` using Mailgun's HTTP webhook signing key (or API key) and verify against the provided `signature`.
+- Keep the verification signing key outside source control and support key rotation.
 - Reject invalid/missing signatures when signature verification is configured.
 - Do not rely on IP allowlisting alone.
-- If the chosen Spring MVC multipart processing path consumes/parses the body before verification, implement an appropriate raw-body verification layer/filter or use a request-processing approach that preserves the original bytes. Document and test this boundary.
-- Add replay protection where supported by the signed timestamp, with a reasonable clock-skew window and idempotency.
-
-Do not invent a signature header, SDK method, or verification flow. Check the current SendGrid documentation and the installed SDK API before coding.
+- Add replay protection using the signed timestamp with a reasonable clock-skew window (e.g. 15 minutes) and idempotency.
 
 ## 6. Email sending and threading
 - Use a dedicated email service; do not send email directly from controllers.
-- Configure SendGrid API credentials through environment variables or secret management.
+- Configure Mailgun API credentials through environment variables or secret management.
 - Set sender identity and reply-to behavior explicitly.
 - Persist the outbound message and provider response metadata needed for diagnostics.
 - Include stable `Message-ID`, `In-Reply-To`, and `References` headers when supported so customer replies can be associated with the same ticket.
@@ -197,7 +193,7 @@ Add tests appropriate to the change:
 - MockMvc/security tests for login, session persistence, authorization, CSRF, CORS, and logout.
 - Webhook tests for multipart parsing, signature success/failure, malformed requests, replay/idempotency, duplicate delivery, and attachment limits.
 - AI tests using a mocked model; do not call paid/live Gemini in ordinary unit tests.
-- Email tests using a mocked SendGrid client.
+- Email tests using a mocked Mailgun client or mock server.
 - Test failure paths and retries, not only happy paths.
 
 ## 11. Definition of done

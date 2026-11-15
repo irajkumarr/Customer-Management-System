@@ -1,7 +1,7 @@
 # Customer Management System (AI Helpdesk) - Project Plan
 
 ## 1. Project Overview
-A responsive Customer Management System where customer emails are ingested via SendGrid webhooks, processed by Google Gemini AI using a Retrieval-Augmented Generation (RAG) pipeline against a local knowledge base, and either auto-replied to or escalated to a human agent. The AI also automatically categorizes the ticket. The frontend is a responsive Flutter Web dashboard restricted to a **single Admin login**, managed via simple session-based authentication and manual refreshes.
+A responsive Customer Management System where customer emails are ingested via Mailgun webhooks, processed by Google Gemini AI using a Retrieval-Augmented Generation (RAG) pipeline against a local knowledge base, and either auto-replied to or escalated to a human agent. The AI also automatically categorizes the ticket. The frontend is a responsive Flutter Web dashboard restricted to a **single Admin login**, managed via simple session-based authentication and manual refreshes.
 
 ## 2. Technology Stack
 
@@ -10,7 +10,7 @@ A responsive Customer Management System where customer emails are ingested via S
 *   **Security:** Spring Security (Session-based authentication for the single Admin)
 *   **Database:** PostgreSQL with `pgvector` extension (Relational data + Vector embeddings)
 *   **AI Provider:** Google Gemini via `spring-ai-starter-model-google-genai`
-*   **Email Provider:** SendGrid (Inbound Parse Webhooks + Outbound API)
+*   **Email Provider:** Mailgun (Inbound Routes / Webhooks + Outbound API)
 
 ### Frontend (Flutter Web/Responsive)
 *   **State Management:** `flutter_bloc` (BLoC / Cubit)
@@ -24,8 +24,8 @@ A responsive Customer Management System where customer emails are ingested via S
 
 ## 3. Architecture & Data Flow
 
-1.  **Ingestion:** Customer emails `support@domain.com`. SendGrid intercepts and POSTs payload to Spring Boot.
-2.  **Processing:** Spring Boot verifies SendGrid webhook signature, parses email, and creates/updates a `Ticket`.
+1.  **Ingestion:** Customer emails `support@domain.com`. Mailgun intercepts and POSTs payload to Spring Boot.
+2.  **Processing:** Spring Boot verifies Mailgun webhook signature, parses email, and creates/updates a `Ticket`.
 3.  **AI RAG & Categorization Pipeline:** 
     *   Spring Boot embeds the customer's query using Gemini.
     *   Queries `pgvector` for relevant chunks from `knowledge_base.md`.
@@ -58,7 +58,7 @@ A responsive Customer Management System where customer emails are ingested via S
 ## 5. Implementation Phases
 
 ### Phase 1: Project Setup & Database
-*   Initialize Spring Boot 4 project (Java 17). Add dependencies: `Spring Web`, `Spring Data JPA`, `PostgreSQL Driver`, `spring-ai-starter-model-google-genai`, `Spring Security`, `SendGrid Java SDK`.
+*   Initialize Spring Boot 4 project (Java 17). Add dependencies: `Spring Web`, `Spring Data JPA`, `PostgreSQL Driver`, `spring-ai-starter-model-google-genai`, `Spring Security`.
 *   Initialize Flutter project. Add dependencies: `flutter_bloc`, `bloc`, `freezed`, `json_annotation`, `dio`, `cookie_jar`, `dio_cookie_manager`, `go_router`, `flutter_markdown`, `responsive_builder`.
 *   Setup PostgreSQL and enable `pgvector`.
 *   Create JPA Entities in Spring Boot, including the simple `Admin` entity and `TicketCategory` enum.
@@ -71,11 +71,11 @@ A responsive Customer Management System where customer emails are ingested via S
 *   In Flutter, initialize a `CookieJar` and attach it to `Dio` using `CookieManager`. This ensures the session cookie is automatically saved and sent with every subsequent API request.
 *   Setup `go_router` `redirect` logic: If the `CookieJar` is empty (no session), redirect to `/login`.
 
-### Phase 3: SendGrid Ingestion & Webhooks
-*   Configure SendGrid Inbound Parse. Point MX records and set webhook URL to `/api/webhooks/sendgrid`.
-*   Build Spring Boot `@RestController` to accept `multipart/form-data`.
-*   Implement SendGrid Event Webhook Signature Verification (Security).
-*   Implement Email Threading: Parse `In-Reply-To` headers to append messages to existing tickets.
+### Phase 3: Mailgun Ingestion & Webhooks
+*   Configure Mailgun Routes. Point MX records and set webhook forward URL to `/api/webhooks/mailgun`.
+*   Build Spring Boot `@RestController` to accept `multipart/form-data` and `application/x-www-form-urlencoded`.
+*   Implement Mailgun Webhook Signature Verification using HMAC-SHA256 (Security).
+*   Implement Email Threading: Parse `In-Reply-To` and `References` headers to append messages to existing tickets.
 
 ### Phase 4: Gemini AI, RAG & Categorization
 *   Write a startup script to read `knowledge_base.md`, chunk it, embed via Gemini, and store in `pgvector`.
@@ -89,7 +89,7 @@ A responsive Customer Management System where customer emails are ingested via S
       "category": "BILLING" 
     }
     ```
-*   Update `TicketService` to read the JSON, update the `TicketStatus` and `TicketCategory`, and use the SendGrid SDK to send the outbound email.
+*   Update `TicketService` to read the JSON, update the `TicketStatus` and `TicketCategory`, and use the Mailgun API to send the outbound email.
 
 ### Phase 5: Flutter Networking & State Management
 *   **Networking & Data Mapping:** Configure the HTTP client to automatically manage session cookies for authentication. Map JSON API responses to immutable data models for type-safe handling across the app.
@@ -113,7 +113,7 @@ A responsive Customer Management System where customer emails are ingested via S
 
 ### Phase 7: Edge Cases & Deployment
 *   **Edge Case - Angry Customer:** If a customer replies to an `AI_REPLIED` ticket, webhook logic automatically bumps status to `ESCALATED_TO_HUMAN`.
-*   **Edge Case - Markdown Emails:** Convert Gemini's Markdown output to HTML before sending via SendGrid.
+*   **Edge Case - Markdown Emails:** Convert Gemini's Markdown output to HTML before sending via Mailgun.
 *   **Deployment:**
     *   Backend: Dockerize Spring Boot 4 (Java 17). Deploy to Render/Railway/AWS. Ensure DB has `pgvector`.
     *   Frontend: `flutter build web --release`. Deploy to Firebase Hosting/Vercel. Configure server to rewrite all 404s to `index.html` for `go_router` support.
@@ -125,5 +125,5 @@ A responsive Customer Management System where customer emails are ingested via S
 1.  **Session Cookies & CORS:** Because Flutter Web runs in the browser, if your frontend (e.g., Vercel) and backend (e.g., Render) are on different domains, you **must** configure Spring Security CORS to `allowCredentials(true)` and specify the exact frontend origin. Otherwise, the browser will block the session cookie.
 2.  **Dio Cookie Management:** Unlike a standard browser, `Dio` does not save cookies automatically. You *must* use the `cookie_jar` and `dio_cookie_manager` packages, otherwise, the Admin will log in successfully but get `401 Unauthorized` on the very next API call.
 3.  **Spring AI Google GenAI Starter:** Ensure your `application.properties` correctly sets `spring.ai.google.genai.api-key` and the specific chat/embedding model names (e.g., `gemini-1.5-pro`).
-4.  **SendGrid Webhook Security:** SendGrid uses ECDSA signatures for their Event Webhooks. Use the official SendGrid Java SDK's `EventWebhook` class to verify the signature easily in your controller.
+4.  **Mailgun Webhook Security:** Mailgun signs webhooks using HMAC-SHA256 on the `timestamp + token` concatenation with your Mailgun Webhook Signing Key. Verify this signature to prevent unauthorized calls.
 5.  **Freezed Boilerplate:** Every time you change a Freezed model in Flutter, run `flutter pub run build_runner build --delete-conflicting-outputs` to regenerate files.
