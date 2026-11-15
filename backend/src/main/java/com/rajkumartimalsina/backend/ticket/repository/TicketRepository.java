@@ -4,6 +4,7 @@ import com.rajkumartimalsina.backend.ticket.entity.TicketEntity;
 import com.rajkumartimalsina.backend.ticket.enums.TicketCategory;
 import com.rajkumartimalsina.backend.ticket.enums.TicketStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -12,13 +13,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface TicketRepository extends JpaRepository<TicketEntity, UUID> {
+public interface TicketRepository extends JpaRepository<TicketEntity, UUID>, JpaSpecificationExecutor<TicketEntity> {
 
     List<TicketEntity> findByStatus(TicketStatus status);
 
     List<TicketEntity> findByCategory(TicketCategory category);
 
     List<TicketEntity> findByCustomerId(UUID customerId);
+
+    long countByStatus(TicketStatus status);
+
+    long countByCategory(TicketCategory category);
 
     @Query("SELECT t FROM TicketEntity t JOIN FETCH t.customer ORDER BY t.updatedAt DESC")
     List<TicketEntity> findAllWithCustomerOrderByUpdatedAtDesc();
