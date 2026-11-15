@@ -1,5 +1,6 @@
 package com.rajkumartimalsina.backend.webhook.service;
 
+import com.rajkumartimalsina.backend.ai.service.TicketAiProcessingService;
 import com.rajkumartimalsina.backend.customer.entity.CustomerEntity;
 import com.rajkumartimalsina.backend.customer.service.CustomerService;
 import com.rajkumartimalsina.backend.message.entity.MessageEntity;
@@ -33,6 +34,7 @@ public class SendGridInboundService {
     private final TicketRepository ticketRepository;
     private final TicketService ticketService;
     private final CustomerService customerService;
+    private final TicketAiProcessingService ticketAiProcessingService;
 
     @Transactional
     public WebhookProcessingResult processInboundEmail(InboundEmailPayload payload) {
@@ -76,6 +78,9 @@ public class SendGridInboundService {
         // No matching thread: Create new ticket and customer if needed
         CustomerEntity customer = customerService.findOrCreateCustomer(sender.email(), sender.name());
         TicketEntity newTicket = ticketService.createInboundTicket(customer, subject, body, messageId);
+
+        // Dispatch asynchronous AI RAG processing
+        ticketAiProcessingService.processTicketWithAiAsync(newTicket.getId());
 
         return new WebhookProcessingResult(
                 newTicket.getId(),

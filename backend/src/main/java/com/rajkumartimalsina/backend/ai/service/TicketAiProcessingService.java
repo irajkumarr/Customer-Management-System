@@ -1,0 +1,126 @@
+package com.rajkumartimalsina.backend.ai.service;
+
+import com.rajkumartimalsina.backend.ai.dto.AiAgentResponse;
+import com.rajkumartimalsina.backend.common.exception.ResourceNotFoundException;
+import com.rajkumartimalsina.backend.email.dto.EmailSendRequest;
+import com.rajkumartimalsina.backend.email.service.EmailService;
+import com.rajkumartimalsina.backend.message.entity.MessageEntity;
+import com.rajkumartimalsina.backend.message.enums.MessageSenderType;
+import com.rajkumartimalsina.backend.message.repository.MessageRepository;
+import com.rajkumartimalsina.backend.ticket.entity.TicketEntity;
+import com.rajkumartimalsina.backend.ticket.enums.TicketCategory;
+import com.rajkumartimalsina.backend.ticket.enums.TicketStatus;
+import com.rajkumartimalsina.backend.ticket.repository.TicketRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class TicketAiProcessingService {
+
+    private final TicketRepository ticketRepository;
+    private final MessageRepository messageRepository;
+    private final AiHelpdeskService aiHelpdeskService;
+    private final EmailService emailService;
+
+    @Async
+    public void processTicketWithAiAsync(UUID ticketId) {
+        try {
+            processTicket(ticketId);
+        } catch (Exception e) {
+            log.error("Failed to process ticket '{}' with AI: {}", ticketId, e.getMessage(), e);
+        }
+    }
+
+    @Transactional
+    public void processTicket(UUID ticketId) {
+        TicketEntity ticket = ticketRepository.findByIdWithCustomer(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + ticketId));
+
+        List<MessageEntity> messages = messageRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
+        if (messages.isEmpty()) {
+            log.warn("No messages found for ticket '{}'. Skipping AI processing.", ticketId);
+            return;
+        }
+
+        // The latest customer message to reply to
+        MessageEntity latestCustomerMessage = messages.stream()
+                .filter(m -> m.getSenderType() == MessageSenderType.CUSTOMER)
+                .reduce((first, second) -> second)
+                .orElse(messages.get(0));
+
+        log.info("Starting AI RAG pipeline for ticket '{}' (subject: '{}')", ticketId, ticket.getSubject());
+
+        // Step 1: Transition to AI_PROCESSING
+        ticket.setStatus(TicketStatus.AI_PROCESSING);
+        ticketRepository.save(ticket);
+
+        // Step 2: Call Gemini AI RAG
+        AiAgentResponse aiResponse = aiHelpdeskService.analyzeAndGenerateReply(
+                ticket.getSubject(),
+                latestCustomerMessage.getBody()
+        );
+
+        // Step 3: Update Category
+        TicketCategory parsedCategory = parseCategory(aiResponse.category());
+        ticket.setCategory(parsedCategory);
+
+        // Step 4: Determine next status
+        TicketStatus targetStatus;
+        if (aiResponse.requiresHuman()) {
+            targetStatus = TicketStatus.ESCALATED_TO_HUMAN;
+            log.info("Ticket '{}' escalated to human. Reason: {}", ticketId, aiResponse.escalationReason());
+        } else {
+            targetStatus = TicketStatus.AI_REPLIED;
+            log.info("Ticket '{}' auto-replied by AI.", ticketId);
+        }
+        ticket.setStatus(targetStatus);
+        ticketRepository.save(ticket);
+
+        // Step 5: Save AI message in thread
+        MessageEntity aiMessage = MessageEntity.builder()
+                .ticket(ticket)
+                .senderType(MessageSenderType.AI)
+                .body(aiResponse.replyText())
+                .isAiGenerated(true)
+                .createdAt(Instant.now())
+                .build();
+        messageRepository.save(aiMessage);
+
+        // Step 6: Dispatch outbound email to customer
+        String customerEmail = ticket.getCustomer().getEmail();
+        String subject = "Re: [Ticket #" + ticket.getId() + "] " + ticket.getSubject();
+        String inReplyTo = latestCustomerMessage.getInboundMessageId();
+        List<String> references = inReplyTo != null ? List.of(inReplyTo) : List.of();
+
+        EmailSendRequest emailRequest = new EmailSendRequest(
+                customerEmail,
+                subject,
+                aiResponse.replyText(),
+                inReplyTo,
+                references
+        );
+
+        emailService.sendEmail(emailRequest);
+        log.info("Outbound email dispatched for ticket '{}' to '{}'", ticketId, customerEmail);
+    }
+
+    private TicketCategory parseCategory(String categoryStr) {
+        if (categoryStr == null || categoryStr.isBlank()) {
+            return TicketCategory.UNKNOWN;
+        }
+        try {
+            return TicketCategory.valueOf(categoryStr.toUpperCase().trim());
+        } catch (IllegalArgumentException e) {
+            return TicketCategory.UNKNOWN;
+        }
+    }
+}
