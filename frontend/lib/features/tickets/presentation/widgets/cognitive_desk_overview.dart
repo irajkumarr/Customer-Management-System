@@ -51,7 +51,9 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
         // Filter tickets for the table
         final filteredTickets = _selectedStatusFilter == null
             ? state.tickets
-            : state.tickets.where((t) => t.status == _selectedStatusFilter).toList();
+            : state.tickets
+                  .where((t) => t.status == _selectedStatusFilter)
+                  .toList();
 
         // Compute real category breakdown from stats or tickets
         final categoryCounts = <String, int>{};
@@ -174,7 +176,8 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
     bool isDark,
   ) {
     final now = DateTime.now();
-    final dateRangeStr = '${DateFormat('MMM d').format(now.subtract(const Duration(days: 30)))} - ${DateFormat('MMM d, yyyy').format(now)}';
+    final dateRangeStr =
+        '${DateFormat('MMM d').format(now.subtract(const Duration(days: 30)))} - ${DateFormat('MMM d, yyyy').format(now)}';
 
     return Row(
       children: [
@@ -227,7 +230,11 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.calendar_today_outlined, size: 13, color: tokens.subtleText),
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 13,
+                color: tokens.subtleText,
+              ),
               const SizedBox(width: 6),
               Text(
                 dateRangeStr,
@@ -265,12 +272,17 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
             backgroundColor: AppColors.neutral900,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
             visualDensity: VisualDensity.compact,
           ),
           onPressed: widget.onViewAll,
           icon: const Icon(Icons.inbox_outlined, size: 14),
-          label: const Text('Open Workspace', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          label: const Text(
+            'Open Workspace',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
         ),
       ],
     );
@@ -323,7 +335,8 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                 trendText: '$autoResolvedRate% resolution rate',
                 trendColor: const Color(0xFF10B981),
                 barColor: const Color(0xFF8B5CF6),
-                barFillRatio: (totalCount > 0 ? aiCount / totalCount : 0.4).clamp(0.1, 1.0),
+                barFillRatio: (totalCount > 0 ? aiCount / totalCount : 0.4)
+                    .clamp(0.1, 1.0),
                 tokens: tokens,
                 isDark: isDark,
               ),
@@ -338,7 +351,11 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                 trendText: '$escalatedRate% handoff queue',
                 trendColor: const Color(0xFFEF4444),
                 barColor: const Color(0xFFEF4444),
-                barFillRatio: (totalCount > 0 ? escalatedCount / totalCount : 0.25).clamp(0.1, 1.0),
+                barFillRatio:
+                    (totalCount > 0 ? escalatedCount / totalCount : 0.25).clamp(
+                      0.1,
+                      1.0,
+                    ),
                 tokens: tokens,
                 isDark: isDark,
               ),
@@ -353,7 +370,9 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                 trendText: 'Under investigation',
                 trendColor: const Color(0xFF3B82F6),
                 barColor: const Color(0xFF3B82F6),
-                barFillRatio: (totalCount > 0 ? inProgressCount / totalCount : 0.15).clamp(0.1, 1.0),
+                barFillRatio:
+                    (totalCount > 0 ? inProgressCount / totalCount : 0.15)
+                        .clamp(0.1, 1.0),
                 tokens: tokens,
                 isDark: isDark,
               ),
@@ -368,7 +387,11 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                 trendText: 'Completed workflows',
                 trendColor: const Color(0xFF10B981),
                 barColor: const Color(0xFF10B981),
-                barFillRatio: (totalCount > 0 ? resolvedCount / totalCount : 0.6).clamp(0.1, 1.0),
+                barFillRatio:
+                    (totalCount > 0 ? resolvedCount / totalCount : 0.6).clamp(
+                      0.1,
+                      1.0,
+                    ),
                 tokens: tokens,
                 isDark: isDark,
               ),
@@ -415,7 +438,10 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                     const SizedBox(height: 2),
                     Text(
                       'Live inbound ticket activity and triage status',
-                      style: TextStyle(fontSize: 11.5, color: tokens.subtleText),
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: tokens.subtleText,
+                      ),
                     ),
                   ],
                 ),
@@ -456,7 +482,10 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                 Expanded(flex: 5, child: _colHeader('SUBJECT')),
                 Expanded(flex: 2, child: _colHeader('CATEGORY')),
                 Expanded(flex: 2, child: _colHeader('STATUS')),
-                Expanded(flex: 2, child: _colHeader('TIME', align: TextAlign.right)),
+                Expanded(
+                  flex: 2,
+                  child: _colHeader('TIME', align: TextAlign.right),
+                ),
               ],
             ),
           ),
@@ -507,7 +536,9 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
           border: isSelected
               ? null
               : Border.all(
-                  color: isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7),
+                  color: isDark
+                      ? const Color(0xFF27272A)
+                      : const Color(0xFFE4E4E7),
                   width: 0.8,
                 ),
         ),
@@ -581,7 +612,10 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
-                child: Text('No activity yet', style: TextStyle(color: tokens.subtleText, fontSize: 12)),
+                child: Text(
+                  'No activity yet',
+                  style: TextStyle(color: tokens.subtleText, fontSize: 12),
+                ),
               ),
             )
           else
@@ -591,10 +625,14 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
 
               final iconColor = isAi
                   ? const Color(0xFF10B981)
-                  : (isEscalated ? const Color(0xFFEF4444) : const Color(0xFF3B82F6));
+                  : (isEscalated
+                        ? const Color(0xFFEF4444)
+                        : const Color(0xFF3B82F6));
               final iconData = isAi
                   ? Icons.auto_awesome_rounded
-                  : (isEscalated ? Icons.warning_amber_rounded : Icons.mail_outline_rounded);
+                  : (isEscalated
+                        ? Icons.warning_amber_rounded
+                        : Icons.mail_outline_rounded);
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 7),
@@ -623,7 +661,9 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : AppColors.neutral900,
+                              color: isDark
+                                  ? Colors.white
+                                  : AppColors.neutral900,
                             ),
                           ),
                           const SizedBox(height: 1),
@@ -631,7 +671,10 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                             '${t.customerName ?? t.customerEmail} • ${DateFormatter.formatRelativeOrTime(t.updatedAt)}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 10.5, color: tokens.subtleText),
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: tokens.subtleText,
+                            ),
                           ),
                         ],
                       ),
@@ -698,7 +741,10 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
-                child: Text('No categories recorded', style: TextStyle(color: tokens.subtleText, fontSize: 12)),
+                child: Text(
+                  'No categories recorded',
+                  style: TextStyle(color: tokens.subtleText, fontSize: 12),
+                ),
               ),
             )
           else
@@ -731,7 +777,9 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white70 : AppColors.neutral800,
+                            color: isDark
+                                ? Colors.white70
+                                : AppColors.neutral800,
                           ),
                         ),
                         const Spacer(),
@@ -751,7 +799,9 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
                       child: LinearProgressIndicator(
                         value: percentage,
                         minHeight: 5,
-                        backgroundColor: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF1F5F9),
+                        backgroundColor: isDark
+                            ? const Color(0xFF1E1E22)
+                            : const Color(0xFFF1F5F9),
                         valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
                     ),
@@ -829,7 +879,7 @@ class _MetricCardItem extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(Icons.more_vert_rounded, size: 13, color: tokens.subtleText),
+              // Icon(Icons.more_vert_rounded, size: 13, color: tokens.subtleText),
             ],
           ),
           const SizedBox(height: 10),
@@ -899,8 +949,28 @@ class _VerticalBarDistributionPainter extends CustomPainter {
 
     // Predefined rhythm of heights (matching reference soundwave density)
     final heights = [
-      0.4, 0.6, 0.8, 0.5, 0.9, 1.0, 0.7, 0.85, 0.6, 0.75,
-      0.9, 0.8, 0.65, 0.7, 0.85, 0.95, 0.6, 0.5, 0.7, 0.8, 0.6, 0.4
+      0.4,
+      0.6,
+      0.8,
+      0.5,
+      0.9,
+      1.0,
+      0.7,
+      0.85,
+      0.6,
+      0.75,
+      0.9,
+      0.8,
+      0.65,
+      0.7,
+      0.85,
+      0.95,
+      0.6,
+      0.5,
+      0.7,
+      0.8,
+      0.6,
+      0.4,
     ];
 
     for (int i = 0; i < totalBars; i++) {
@@ -927,7 +997,8 @@ class _VerticalBarDistributionPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _VerticalBarDistributionPainter oldDelegate) {
-    return oldDelegate.fillRatio != fillRatio || oldDelegate.accentColor != accentColor;
+    return oldDelegate.fillRatio != fillRatio ||
+        oldDelegate.accentColor != accentColor;
   }
 }
 
@@ -955,15 +1026,16 @@ class _TableRowItemState extends State<_TableRowItem> {
   @override
   Widget build(BuildContext context) {
     final ticket = widget.ticket;
-    final customerName = ticket.customerName != null && ticket.customerName!.isNotEmpty
+    final customerName =
+        ticket.customerName != null && ticket.customerName!.isNotEmpty
         ? ticket.customerName!
         : ticket.customerEmail.split('@').first;
 
     final initials = customerName.length >= 2
         ? customerName.substring(0, 2).toUpperCase()
         : customerName.isNotEmpty
-            ? customerName.substring(0, 1).toUpperCase()
-            : 'CU';
+        ? customerName.substring(0, 1).toUpperCase()
+        : 'CU';
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -975,9 +1047,13 @@ class _TableRowItemState extends State<_TableRowItem> {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           decoration: BoxDecoration(
             color: _isHovered
-                ? (widget.isDark ? const Color(0xFF141416) : const Color(0xFFF8FAFC))
+                ? (widget.isDark
+                      ? const Color(0xFF141416)
+                      : const Color(0xFFF8FAFC))
                 : Colors.transparent,
-            border: Border(bottom: BorderSide(color: widget.tokens.cardBorder, width: 0.8)),
+            border: Border(
+              bottom: BorderSide(color: widget.tokens.cardBorder, width: 0.8),
+            ),
           ),
           child: Row(
             children: [
@@ -990,7 +1066,9 @@ class _TableRowItemState extends State<_TableRowItem> {
                       width: 22,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                        color: widget.isDark
+                            ? const Color(0xFF27272A)
+                            : const Color(0xFFF4F4F5),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       alignment: Alignment.center,
@@ -999,7 +1077,9 @@ class _TableRowItemState extends State<_TableRowItem> {
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.bold,
-                          color: widget.isDark ? Colors.white : AppColors.neutral900,
+                          color: widget.isDark
+                              ? Colors.white
+                              : AppColors.neutral900,
                         ),
                       ),
                     ),
@@ -1012,7 +1092,9 @@ class _TableRowItemState extends State<_TableRowItem> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: widget.isDark ? Colors.white : AppColors.neutral950,
+                          color: widget.isDark
+                              ? Colors.white
+                              : AppColors.neutral950,
                         ),
                       ),
                     ),
@@ -1031,7 +1113,9 @@ class _TableRowItemState extends State<_TableRowItem> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
-                      color: widget.isDark ? const Color(0xFFD4D4D8) : AppColors.neutral800,
+                      color: widget.isDark
+                          ? const Color(0xFFD4D4D8)
+                          : AppColors.neutral800,
                     ),
                   ),
                 ),
@@ -1043,11 +1127,19 @@ class _TableRowItemState extends State<_TableRowItem> {
                 child: Container(
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: widget.isDark ? const Color(0xFF18181B) : const Color(0xFFF4F4F5),
+                      color: widget.isDark
+                          ? const Color(0xFF18181B)
+                          : const Color(0xFFF4F4F5),
                       borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: widget.tokens.cardBorder, width: 0.8),
+                      border: Border.all(
+                        color: widget.tokens.cardBorder,
+                        width: 0.8,
+                      ),
                     ),
                     child: Text(
                       ticket.category.displayName,
@@ -1067,7 +1159,10 @@ class _TableRowItemState extends State<_TableRowItem> {
                 child: Container(
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: ticket.status.color.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(4),
@@ -1108,7 +1203,10 @@ class _TableRowItemState extends State<_TableRowItem> {
                 child: Text(
                   DateFormatter.formatRelativeOrTime(ticket.updatedAt),
                   textAlign: TextAlign.right,
-                  style: TextStyle(fontSize: 11, color: widget.tokens.subtleText),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: widget.tokens.subtleText,
+                  ),
                 ),
               ),
             ],

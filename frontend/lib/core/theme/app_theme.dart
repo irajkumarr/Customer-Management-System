@@ -25,7 +25,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.surface,
-      fontFamily: 'Roboto',
+      fontFamily: 'Poppins',
       extensions: const [
         HelpdeskThemeTokens.light,
       ],
@@ -145,7 +145,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.backgroundDark,
-      fontFamily: 'Roboto',
+      fontFamily: 'Poppins',
       extensions: const [
         HelpdeskThemeTokens.dark,
       ],
