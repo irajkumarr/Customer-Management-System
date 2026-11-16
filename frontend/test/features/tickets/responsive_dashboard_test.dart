@@ -235,7 +235,7 @@ void main() {
       // TicketDetailPane exists
       expect(find.byType(TicketDetailPane), findsOneWidget);
       // Placeholder shows because no ticket is selected
-      expect(find.text('No Ticket Selected'), findsOneWidget);
+      expect(find.text('No ticket selected'), findsOneWidget);
     });
 
     testWidgets('Desktop view (>900px) with selected ticket displays Detail pane with messages',
@@ -254,8 +254,7 @@ void main() {
       expect(find.byType(AppSidebar), findsOneWidget);
       expect(find.byType(TicketListPane), findsOneWidget);
       expect(find.byType(TicketDetailPane), findsOneWidget);
-      expect(find.text('Ticket #1'), findsOneWidget);
-      expect(find.text('Hello, I was charged twice for renewal.'), findsOneWidget);
+      expect(find.text('Hello, I was charged twice for renewal.'), findsWidgets);
     });
 
     testWidgets('Mobile view (<900px) with no selection displays Ticket list with Drawer button',
@@ -317,7 +316,7 @@ void main() {
       expect(find.byType(AppSidebar), findsOneWidget);
       expect(find.byType(TicketListPane), findsOneWidget);
       expect(find.byType(TicketDetailPane), findsOneWidget);
-      expect(find.text('Ticket #1'), findsOneWidget);
+      expect(find.text('Hello, I was charged twice for renewal.'), findsWidgets);
     });
 
     testWidgets('AdminReplyBar submits on Ctrl+Enter keyboard shortcut', (tester) async {

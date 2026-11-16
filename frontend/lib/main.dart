@@ -27,8 +27,8 @@ class CustomerManagementApp extends StatelessWidget {
         title: 'AI Helpdesk Admin',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        // darkTheme: AppTheme.darkTheme,
-        // themeMode: ThemeMode.system,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
         routerConfig: sl<AppRouter>().router,
       ),
     );

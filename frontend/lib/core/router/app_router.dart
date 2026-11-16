@@ -41,10 +41,8 @@ class AppRouter {
       final isLoggingIn = state.matchedLocation == '/login';
 
       final isAuthenticated = authState is Authenticated;
-      final isUnauthenticated =
-          authState is Unauthenticated || authState is AuthFailure;
 
-      if (isUnauthenticated && !isLoggingIn) {
+      if (!isAuthenticated && !isLoggingIn) {
         return '/login';
       }
 
