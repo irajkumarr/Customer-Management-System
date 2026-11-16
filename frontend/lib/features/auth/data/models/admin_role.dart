@@ -1,7 +1,1 @@
-// ignore_for_file: constant_identifier_names
-
-enum AdminRole {
-  ADMIN;
-
-  String get displayName => 'Administrator';
-}
+export '../../domain/entities/admin_role.dart';

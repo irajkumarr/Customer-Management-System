@@ -1,30 +1,29 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:frontend/core/di/service_locator.dart';
+import 'package:frontend/features/auth/domain/repositories/auth_repository.dart';
+import 'package:frontend/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:frontend/main.dart';
+import 'features/auth/auth_cubit_test.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  setUp(() async {
+    await initServiceLocator();
+    // Swap repository with fake implementation
+    sl.unregister<AuthRepository>();
+    sl.registerLazySingleton<AuthRepository>(() => FakeAuthRepository());
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  testWidgets('Renders LoginPage when user is unauthenticated', (WidgetTester tester) async {
+    await tester.pumpWidget(const CustomerManagementApp());
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Initial check redirects to /login when unauthenticated
+    await sl<AuthCubit>().checkAuthStatus();
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Helpdesk Admin'), findsOneWidget);
+    expect(find.text('AI Customer Management Portal'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(2));
   });
 }

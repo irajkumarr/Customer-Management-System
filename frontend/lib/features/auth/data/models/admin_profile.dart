@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/admin.dart';
 import 'admin_role.dart';
 
 part 'admin_profile.freezed.dart';
@@ -13,4 +14,8 @@ abstract class AdminProfile with _$AdminProfile {
   }) = _AdminProfile;
 
   factory AdminProfile.fromJson(Map<String, dynamic> json) => _$AdminProfileFromJson(json);
+}
+
+extension AdminProfileX on AdminProfile {
+  Admin toEntity() => Admin(id: id, username: username, role: role);
 }

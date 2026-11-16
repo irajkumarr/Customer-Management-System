@@ -1,6 +1,8 @@
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/foundation.dart';
+
 import '../constants/api_constants.dart';
 import 'api_exception.dart';
 import 'api_response.dart';
@@ -9,13 +11,10 @@ class ApiClient {
   late final Dio _dio;
   late final CookieJar _cookieJar;
 
-  ApiClient({
-    String? baseUrl,
-    CookieJar? cookieJar,
-    Dio? dio,
-  }) {
+  ApiClient({String? baseUrl, CookieJar? cookieJar, Dio? dio}) {
     _cookieJar = cookieJar ?? CookieJar();
-    _dio = dio ??
+    _dio =
+        dio ??
         Dio(
           BaseOptions(
             baseUrl: baseUrl ?? ApiConstants.baseUrl,
@@ -26,24 +25,32 @@ class ApiClient {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
-            extra: {
-              'withCredentials': true,
-            },
+            extra: {'withCredentials': true},
           ),
         );
 
-    _dio.interceptors.add(CookieManager(_cookieJar));
+    // In web browsers, cookies are managed automatically by the browser via withCredentials.
+    // dio_cookie_manager explicitly forbids being added on web platforms.
+    if (!kIsWeb) {
+      _dio.interceptors.add(CookieManager(_cookieJar));
+    }
   }
 
   Dio get dio => _dio;
   CookieJar get cookieJar => _cookieJar;
 
   /// Checks if a valid session cookie (JSESSIONID) is present in the cookie jar.
+  /// On web platforms, HttpOnly cookies are managed securely by the browser.
   Future<bool> hasSessionCookie() async {
+    if (kIsWeb) {
+      return true;
+    }
     try {
       final uri = Uri.parse(_dio.options.baseUrl);
       final cookies = await _cookieJar.loadForRequest(uri);
-      return cookies.any((c) => c.name.toUpperCase() == 'JSESSIONID' && c.value.isNotEmpty);
+      return cookies.any(
+        (c) => c.name.toUpperCase() == 'JSESSIONID' && c.value.isNotEmpty,
+      );
     } catch (_) {
       return false;
     }
@@ -51,9 +58,11 @@ class ApiClient {
 
   /// Clears all cookies from the session jar upon logout.
   Future<void> clearCookies() async {
-    try {
-      await _cookieJar.deleteAll();
-    } catch (_) {}
+    if (!kIsWeb) {
+      try {
+        await _cookieJar.deleteAll();
+      } catch (_) {}
+    }
   }
 
   /// Generic GET request unwrapping Spring Boot `ApiResponse<T>`
@@ -71,7 +80,9 @@ class ApiClient {
 
       final data = response.data;
       if (data == null) {
-        throw const ApiException(message: 'Empty response received from server.');
+        throw const ApiException(
+          message: 'Empty response received from server.',
+        );
       }
       return ApiResponse<T>.fromJson(data, fromJsonT);
     } on DioException catch (e) {
@@ -99,7 +110,9 @@ class ApiClient {
 
       final respData = response.data;
       if (respData == null) {
-        throw const ApiException(message: 'Empty response received from server.');
+        throw const ApiException(
+          message: 'Empty response received from server.',
+        );
       }
       return ApiResponse<T>.fromJson(respData, fromJsonT);
     } on DioException catch (e) {
@@ -127,7 +140,9 @@ class ApiClient {
 
       final respData = response.data;
       if (respData == null) {
-        throw const ApiException(message: 'Empty response received from server.');
+        throw const ApiException(
+          message: 'Empty response received from server.',
+        );
       }
       return ApiResponse<T>.fromJson(respData, fromJsonT);
     } on DioException catch (e) {

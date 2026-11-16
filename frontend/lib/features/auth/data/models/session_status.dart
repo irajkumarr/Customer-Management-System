@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/session_status_entity.dart';
 
 part 'session_status.freezed.dart';
 part 'session_status.g.dart';
@@ -12,4 +13,12 @@ abstract class SessionStatus with _$SessionStatus {
   }) = _SessionStatus;
 
   factory SessionStatus.fromJson(Map<String, dynamic> json) => _$SessionStatusFromJson(json);
+}
+
+extension SessionStatusX on SessionStatus {
+  SessionStatusEntity toEntity() => SessionStatusEntity(
+        isAuthenticated: authenticated,
+        username: username,
+        role: role,
+      );
 }

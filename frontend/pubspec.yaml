@@ -53,6 +53,9 @@ dependencies:
   # Data Modeling & JSON Annotations
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
+  get_it: ^9.3.0
+  fpdart: ^1.2.0
+  equatable: ^3.0.0
 
 dev_dependencies:
   flutter_test:
