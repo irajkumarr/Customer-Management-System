@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/helpdesk_theme_tokens.dart';
 import '../bloc/auth_state.dart';
@@ -7,11 +8,7 @@ class LoginCard extends StatefulWidget {
   final AuthState authState;
   final void Function(String username, String password) onSubmit;
 
-  const LoginCard({
-    super.key,
-    required this.authState,
-    required this.onSubmit,
-  });
+  const LoginCard({super.key, required this.authState, required this.onSubmit});
 
   @override
   State<LoginCard> createState() => _LoginCardState();
@@ -45,8 +42,12 @@ class _LoginCardState extends State<LoginCard> {
     final isLoading = widget.authState is AuthLoading;
 
     final cardBg = isDark ? AppColors.surfaceDark : Colors.white;
-    final inputFill = isDark ? const Color(0xFF18181B) : const Color(0xFFFAFAFA);
-    final borderColor = isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7);
+    final inputFill = isDark
+        ? const Color(0xFF18181B)
+        : const Color(0xFFFAFAFA);
+    final borderColor = isDark
+        ? const Color(0xFF27272A)
+        : const Color(0xFFE4E4E7);
     final primaryTextColor = isDark ? Colors.white : AppColors.neutral950;
 
     return Column(
@@ -80,7 +81,9 @@ class _LoginCardState extends State<LoginCard> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF18181B) : const Color(0xFFF4F4F5),
+                        color: isDark
+                            ? const Color(0xFF18181B)
+                            : const Color(0xFFF4F4F5),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: borderColor, width: 0.8),
                       ),
@@ -111,17 +114,17 @@ class _LoginCardState extends State<LoginCard> {
                   Text(
                     'Enter your credentials to access the workspace',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: tokens.subtleText,
-                    ),
+                    style: TextStyle(fontSize: 12.5, color: tokens.subtleText),
                   ),
                   const SizedBox(height: 24),
 
                   // Error alert if login fails
                   if (widget.authState is AuthFailure) ...[
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 9,
+                      ),
                       decoration: BoxDecoration(
                         color: tokens.statusEscalated.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(6),
@@ -280,8 +283,12 @@ class _LoginCardState extends State<LoginCard> {
                     child: ElevatedButton(
                       onPressed: isLoading ? null : _submit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark ? Colors.white : AppColors.neutral900,
-                        foregroundColor: isDark ? AppColors.neutral950 : Colors.white,
+                        backgroundColor: isDark
+                            ? Colors.white
+                            : AppColors.neutral900,
+                        foregroundColor: isDark
+                            ? AppColors.neutral950
+                            : Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
@@ -311,23 +318,6 @@ class _LoginCardState extends State<LoginCard> {
               ),
             ),
           ),
-        ),
-
-        // Clean Footer
-        const SizedBox(height: 24),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.shield_outlined, size: 12, color: tokens.subtleText),
-            const SizedBox(width: 5),
-            Text(
-              'Encrypted Session • Single-Admin Portal',
-              style: TextStyle(
-                fontSize: 11.5,
-                color: tokens.subtleText,
-              ),
-            ),
-          ],
         ),
       ],
     );
