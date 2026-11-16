@@ -21,8 +21,8 @@ void main() {
     await sl<AuthCubit>().checkAuthStatus();
     await tester.pumpAndSettle();
 
-    expect(find.text('Helpdesk Admin'), findsOneWidget);
-    expect(find.text('AI Customer Management Portal'), findsOneWidget);
+    expect(find.text('CognitiveDesk'), findsOneWidget);
+    expect(find.text('Sign in to your admin console'), findsOneWidget);
     expect(find.text('Sign In'), findsOneWidget);
     expect(find.byType(TextFormField), findsNWidgets(2));
   });

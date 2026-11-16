@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+
 import '../../../../core/theme/helpdesk_theme_tokens.dart';
 import '../bloc/auth_state.dart';
 
@@ -7,11 +7,7 @@ class LoginCard extends StatefulWidget {
   final AuthState authState;
   final void Function(String username, String password) onSubmit;
 
-  const LoginCard({
-    super.key,
-    required this.authState,
-    required this.onSubmit,
-  });
+  const LoginCard({super.key, required this.authState, required this.onSubmit});
 
   @override
   State<LoginCard> createState() => _LoginCardState();
@@ -32,10 +28,8 @@ class _LoginCardState extends State<LoginCard> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      widget.onSubmit(
-        _usernameController.text,
-        _passwordController.text,
-      );
+      String username = _usernameController.text.trim();
+      widget.onSubmit(username, _passwordController.text);
     }
   }
 
@@ -45,183 +39,331 @@ class _LoginCardState extends State<LoginCard> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isLoading = widget.authState is AuthLoading;
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 420),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: tokens.cardBorder),
-        ),
-        color: isDark ? const Color(0xFF0F172A) : Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Brand Header
-                Center(
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, Color(0xFF4F46E5)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.support_agent_rounded,
-                      size: 28,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Helpdesk Admin',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    letterSpacing: -0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'AI Customer Management Portal',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: tokens.subtleText,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
+    final inputFill = isDark
+        ? const Color(0xFF0F172A)
+        : const Color(0xFFF1F5F9);
+    final inputBorder = isDark
+        ? const Color(0xFF334155)
+        : const Color(0xFFE2E8F0);
 
-                // Error alert
-                if (widget.authState is AuthFailure) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: tokens.statusEscalated.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: tokens.statusEscalated.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline_rounded,
-                          color: tokens.statusEscalated,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            (widget.authState as AuthFailure).message,
-                            style: TextStyle(
-                              color: tokens.statusEscalated,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                ],
-
-                // Username field
-                TextFormField(
-                  controller: _usernameController,
-                  enabled: !isLoading,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Username',
-                    hintText: 'admin',
-                    prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your username';
-                    }
-                    return null;
-                  },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFE2E8F0).withValues(alpha: 0.8),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
                 ),
-                const SizedBox(height: 16),
-
-                // Password field
-                TextFormField(
-                  controller: _passwordController,
-                  enabled: !isLoading,
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _submit(),
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        size: 18,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // Submit button
-                ElevatedButton(
-                  onPressed: isLoading ? null : _submit,
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          'Sign In',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                BoxShadow(
+                  color: const Color(0xFF4F46E5)
+                      .withValues(alpha: isDark ? 0.08 : 0.04),
+                  blurRadius: 40,
+                  offset: const Offset(0, 16),
                 ),
               ],
             ),
+            padding: const EdgeInsets.fromLTRB(36, 40, 36, 32),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Brand Header Icon (4-square grid icon matching CognitiveDesk design)
+                  Center(
+                    child: Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4338CA),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4338CA)
+                                .withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.grid_view_rounded,
+                        size: 22,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // CognitiveDesk Title
+                  Text(
+                    'CognitiveDesk',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 22,
+                      letterSpacing: -0.5,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Subtitle
+                  Text(
+                    'Sign in to your admin console',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: tokens.subtleText,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Error alert
+                  if (widget.authState is AuthFailure) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: tokens.statusEscalated.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: tokens.statusEscalated.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline_rounded,
+                            color: tokens.statusEscalated,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              (widget.authState as AuthFailure).message,
+                              style: TextStyle(
+                                color: tokens.statusEscalated,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Username Field
+                  Text(
+                    'Username',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? const Color(0xFFE2E8F0)
+                          : const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  TextFormField(
+                    controller: _usernameController,
+                    enabled: !isLoading,
+                    textInputAction: TextInputAction.next,
+                    style: const TextStyle(fontSize: 13.5),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: inputFill,
+                      hintText: 'admin',
+                      hintStyle: TextStyle(
+                        fontSize: 13,
+                        color: tokens.subtleText.withValues(alpha: 0.6),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.person_2_outlined,
+                        size: 18,
+                        color: tokens.subtleText,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: inputBorder),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: inputBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF4338CA),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your username';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Password Field
+                  Text(
+                    'Password',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? const Color(0xFFE2E8F0)
+                          : const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  TextFormField(
+                    controller: _passwordController,
+                    enabled: !isLoading,
+                    obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _submit(),
+                    style: const TextStyle(fontSize: 13.5),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: inputFill,
+                      hintText: '*********',
+                      prefixIcon: Icon(
+                        Icons.lock_outline_rounded,
+                        size: 18,
+                        color: tokens.subtleText,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 18,
+                          color: tokens.subtleText,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: inputBorder),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: inputBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF4338CA),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  // Submit Button (Sign In ->)
+                  SizedBox(
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3B32DB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+
+        // Page Footer (below the card)
+        const SizedBox(height: 28),
+        Text(
+          '© 2026 CognitiveDesk AI Helpdesk • v1.0.0',
+          style: TextStyle(
+            fontSize: 11.5,
+            color: tokens.subtleText,
+            fontWeight: FontWeight.w400,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }
