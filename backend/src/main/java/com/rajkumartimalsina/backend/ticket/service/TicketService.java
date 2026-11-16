@@ -6,6 +6,7 @@ import com.rajkumartimalsina.backend.customer.entity.CustomerEntity;
 import com.rajkumartimalsina.backend.customer.repository.CustomerRepository;
 import com.rajkumartimalsina.backend.customer.service.CustomerService;
 import com.rajkumartimalsina.backend.email.dto.EmailSendRequest;
+import com.rajkumartimalsina.backend.email.dto.EmailSendResult;
 import com.rajkumartimalsina.backend.email.service.EmailService;
 import com.rajkumartimalsina.backend.message.dto.MessageCreateRequest;
 import com.rajkumartimalsina.backend.message.dto.MessageResponse;
@@ -272,7 +273,7 @@ public class TicketService {
         String emailSubject = "Re: [Ticket #" + ticket.getId() + "] " + ticket.getSubject();
         List<String> references = inReplyTo != null ? List.of(inReplyTo) : List.of();
 
-        emailService.sendEmail(new EmailSendRequest(
+        EmailSendResult sendResult = emailService.sendEmail(new EmailSendRequest(
                 customerEmail,
                 emailSubject,
                 request.body().trim(),
@@ -280,7 +281,13 @@ public class TicketService {
                 references
         ));
 
-        log.info("Admin reply sent and emailed to '{}' for ticket '{}'", customerEmail, ticketId);
+        if (sendResult.success()) {
+            log.info("Admin reply sent and emailed to '{}' for ticket '{}' (Message-ID: {})",
+                    customerEmail, ticketId, sendResult.messageId());
+        } else {
+            log.warn("Admin reply recorded for ticket '{}', but outbound email to '{}' failed: {}",
+                    ticketId, customerEmail, sendResult.errorMessage());
+        }
         return MessageResponse.fromEntity(savedMessage);
     }
 }
