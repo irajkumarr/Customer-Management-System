@@ -1002,6 +1002,39 @@ class _TicketConversationViewState extends State<TicketConversationView> {
               ),
               const Divider(height: 20),
 
+              // Category Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Category', style: TextStyle(fontSize: 12.5, color: tokens.subtleText)),
+                  PopupMenuButton<TicketCategory>(
+                    onSelected: (c) => cubit.updateCategory(c),
+                    itemBuilder: (context) => TicketCategory.values.map(
+                      (c) => PopupMenuItem(
+                        value: c,
+                        child: Text(c.displayName, style: const TextStyle(fontSize: 13)),
+                      ),
+                    ).toList(),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          ticket.category.displayName,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: tokens.subtleText),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(height: 20),
+
               // Priority Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
