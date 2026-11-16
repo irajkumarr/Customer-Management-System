@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/di/service_locator.dart';
 import '../bloc/ticket_detail_cubit.dart';
 import '../bloc/ticket_detail_state.dart';
 import '../widgets/admin_reply_bar.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/ticket_header_card.dart';
 
-class TicketDetailPage extends StatefulWidget {
+class TicketDetailPage extends StatelessWidget {
   final String ticketId;
 
   const TicketDetailPage({
@@ -17,16 +18,41 @@ class TicketDetailPage extends StatefulWidget {
   });
 
   @override
-  State<TicketDetailPage> createState() => _TicketDetailPageState();
+  Widget build(BuildContext context) {
+    try {
+      context.read<TicketDetailCubit>();
+      return _TicketDetailPageView(ticketId: ticketId);
+    } catch (_) {
+      return BlocProvider<TicketDetailCubit>(
+        create: (_) => sl<TicketDetailCubit>()..loadTicket(ticketId),
+        child: _TicketDetailPageView(ticketId: ticketId),
+      );
+    }
+  }
 }
 
-class _TicketDetailPageState extends State<TicketDetailPage> {
+class _TicketDetailPageView extends StatefulWidget {
+  final String ticketId;
+
+  const _TicketDetailPageView({
+    required this.ticketId,
+  });
+
+  @override
+  State<_TicketDetailPageView> createState() => _TicketDetailPageViewState();
+}
+
+class _TicketDetailPageViewState extends State<_TicketDetailPageView> {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    context.read<TicketDetailCubit>().loadTicket(widget.ticketId);
+    // Ensure loaded
+    final cubit = context.read<TicketDetailCubit>();
+    if (cubit.state.ticket?.id.toString() != widget.ticketId) {
+      cubit.loadTicket(widget.ticketId);
+    }
   }
 
   @override

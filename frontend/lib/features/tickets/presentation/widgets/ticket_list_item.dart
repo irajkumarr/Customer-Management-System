@@ -44,60 +44,68 @@ class TicketListItem extends StatelessWidget {
             children: [
               // Top row: Badges and timestamp
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Status Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: ticket.status.color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: ticket.status.color.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  Expanded(
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
+                        // Status Badge
                         Container(
-                          width: 6,
-                          height: 6,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: ticket.status.color,
-                            shape: BoxShape.circle,
+                            color: ticket.status.color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: ticket.status.color.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: ticket.status.color,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                ticket.status.displayName,
+                                style: TextStyle(
+                                  color: ticket.status.color,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          ticket.status.displayName,
-                          style: TextStyle(
-                            color: ticket.status.color,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+
+                        // Category Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: ticket.category.color.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            ticket.category.displayName,
+                            style: TextStyle(
+                              color: ticket.category.color,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 8),
-
-                  // Category Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: ticket.category.color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      ticket.category.displayName,
-                      style: TextStyle(
-                        color: ticket.category.color,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-
-                  const Spacer(),
 
                   // Updated Time
                   Text(
@@ -132,16 +140,18 @@ class TicketListItem extends StatelessWidget {
                     color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    ticket.customerName != null && ticket.customerName!.isNotEmpty
-                        ? '${ticket.customerName} (${ticket.customerEmail})'
-                        : ticket.customerEmail,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                      fontSize: 12,
+                  Expanded(
+                    child: Text(
+                      ticket.customerName != null && ticket.customerName!.isNotEmpty
+                          ? '${ticket.customerName} (${ticket.customerEmail})'
+                          : ticket.customerEmail,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

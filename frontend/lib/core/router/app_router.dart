@@ -5,10 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
-import '../../features/tickets/presentation/bloc/ticket_detail_cubit.dart';
 import '../../features/tickets/presentation/bloc/ticket_list_cubit.dart';
 import '../../features/tickets/presentation/pages/ticket_dashboard_page.dart';
-import '../../features/tickets/presentation/pages/ticket_detail_page.dart';
 import '../di/service_locator.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -58,24 +56,26 @@ class AppRouter {
         name: 'login',
         builder: (context, state) => const LoginPage(),
       ),
-      GoRoute(
-        path: '/tickets',
-        name: 'tickets',
-        builder: (context, state) => BlocProvider<TicketListCubit>(
+      ShellRoute(
+        builder: (context, state, child) => BlocProvider<TicketListCubit>(
           create: (_) => sl<TicketListCubit>(),
-          child: const TicketDashboardPage(),
+          child: child,
         ),
         routes: [
           GoRoute(
-            path: ':id',
-            name: 'ticket-detail',
-            builder: (context, state) {
-              final id = state.pathParameters['id'] ?? '';
-              return BlocProvider<TicketDetailCubit>(
-                create: (_) => sl<TicketDetailCubit>(),
-                child: TicketDetailPage(ticketId: id),
-              );
-            },
+            path: '/tickets',
+            name: 'tickets',
+            builder: (context, state) => const TicketDashboardPage(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                name: 'ticket-detail',
+                builder: (context, state) {
+                  final id = state.pathParameters['id'] ?? '';
+                  return TicketDashboardPage(selectedTicketId: id);
+                },
+              ),
+            ],
           ),
         ],
       ),

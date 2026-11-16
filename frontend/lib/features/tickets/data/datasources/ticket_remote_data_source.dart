@@ -123,7 +123,10 @@ class TicketRemoteDataSourceImpl implements TicketRemoteDataSource {
   Future<Message> sendAdminReply(String id, String body) async {
     final response = await apiClient.post<Message>(
       ApiConstants.ticketMessages(id),
-      data: {'body': body.trim()},
+      data: {
+        'body': body.trim(),
+        'resolveTicket': false,
+      },
       fromJsonT: (json) => Message.fromJson(json as Map<String, dynamic>),
     );
 

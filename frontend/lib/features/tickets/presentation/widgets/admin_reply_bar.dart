@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class AdminReplyBar extends StatefulWidget {
@@ -73,25 +74,31 @@ class _AdminReplyBarState extends State<AdminReplyBar> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    enabled: !widget.isSending,
-                    maxLines: 5,
-                    minLines: 1,
-                    textInputAction: TextInputAction.newline,
-                    decoration: InputDecoration(
-                      hintText: 'Type your official reply to customer...',
-                      hintStyle: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                      ),
-                      filled: true,
-                      fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  child: CallbackShortcuts(
+                    bindings: <ShortcutActivator, VoidCallback>{
+                      const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
+                      const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
+                    },
+                    child: TextField(
+                      controller: _controller,
+                      enabled: !widget.isSending,
+                      maxLines: 5,
+                      minLines: 1,
+                      textInputAction: TextInputAction.newline,
+                      decoration: InputDecoration(
+                        hintText: 'Type your official reply to customer...',
+                        hintStyle: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                          ),
                         ),
                       ),
                     ),
@@ -121,11 +128,21 @@ class _AdminReplyBarState extends State<AdminReplyBar> {
               children: [
                 const Icon(Icons.email_outlined, size: 13, color: Color(0xFF64748B)),
                 const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Customer will receive this message as an outbound email via Mailgun.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    ),
+                  ),
+                ),
                 Text(
-                  'Customer will receive this message as an outbound email via Mailgun.',
-                  style: theme.textTheme.bodySmall?.copyWith(
+                  'Ctrl+Enter to send',
+                  style: TextStyle(
                     fontSize: 11,
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    fontStyle: FontStyle.italic,
+                    color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
                   ),
                 ),
               ],
