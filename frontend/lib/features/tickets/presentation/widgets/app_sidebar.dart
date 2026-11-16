@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/helpdesk_theme_tokens.dart';
 import '../../../auth/presentation/bloc/auth_cubit.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
@@ -101,7 +102,13 @@ class _AppSidebarFull extends StatelessWidget {
                   final stats = state.stats;
                   final totalCount = stats?.total ?? 12;
 
-                  final isOverviewSelected = state.selectedStatus == null && state.selectedCategory == null;
+                  String currentPath = '';
+                  try {
+                    currentPath = GoRouterState.of(context).matchedLocation;
+                  } catch (_) {
+                    currentPath = '/tickets';
+                  }
+                  final isOverviewRoute = currentPath == '/overview' || currentPath == '/';
 
                   return ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -110,11 +117,14 @@ class _AppSidebarFull extends StatelessWidget {
                       _CognitiveDeskNavItem(
                         icon: Icons.bar_chart_rounded,
                         label: 'Overview',
-                        isSelected: isOverviewSelected,
+                        isSelected: isOverviewRoute,
                         onTap: () {
                           cubit.setStatusFilter(null);
                           cubit.setCategoryFilter(null);
                           if (isDrawer) Navigator.of(context).maybePop();
+                          try {
+                            context.go('/overview');
+                          } catch (_) {}
                         },
                       ),
                       const SizedBox(height: 2),
@@ -124,9 +134,14 @@ class _AppSidebarFull extends StatelessWidget {
                         icon: Icons.inbox_outlined,
                         label: 'Tickets',
                         badgeText: '$totalCount',
-                        isSelected: !isOverviewSelected,
+                        isSelected: !isOverviewRoute && state.selectedStatus == null && state.selectedCategory == null,
                         onTap: () {
+                          cubit.setStatusFilter(null);
+                          cubit.setCategoryFilter(null);
                           if (isDrawer) Navigator.of(context).maybePop();
+                          try {
+                            context.go('/tickets');
+                          } catch (_) {}
                         },
                       ),
                       const SizedBox(height: 2),
@@ -181,10 +196,13 @@ class _AppSidebarFull extends StatelessWidget {
                         label: 'Escalated to Human',
                         count: stats?.escalatedToHuman,
                         color: tokens.statusEscalated,
-                        isSelected: state.selectedStatus == TicketStatus.ESCALATED_TO_HUMAN,
+                        isSelected: !isOverviewRoute && state.selectedStatus == TicketStatus.ESCALATED_TO_HUMAN,
                         onTap: () {
                           cubit.setStatusFilter(TicketStatus.ESCALATED_TO_HUMAN);
                           if (isDrawer) Navigator.of(context).maybePop();
+                          try {
+                            context.go('/tickets');
+                          } catch (_) {}
                         },
                       ),
 
@@ -193,10 +211,13 @@ class _AppSidebarFull extends StatelessWidget {
                         label: 'In Progress',
                         count: stats?.inProgress,
                         color: tokens.statusInProgress,
-                        isSelected: state.selectedStatus == TicketStatus.IN_PROGRESS,
+                        isSelected: !isOverviewRoute && state.selectedStatus == TicketStatus.IN_PROGRESS,
                         onTap: () {
                           cubit.setStatusFilter(TicketStatus.IN_PROGRESS);
                           if (isDrawer) Navigator.of(context).maybePop();
+                          try {
+                            context.go('/tickets');
+                          } catch (_) {}
                         },
                       ),
 
@@ -205,10 +226,13 @@ class _AppSidebarFull extends StatelessWidget {
                         label: 'AI Replied',
                         count: stats?.aiReplied,
                         color: tokens.statusAiProcessing,
-                        isSelected: state.selectedStatus == TicketStatus.AI_REPLIED,
+                        isSelected: !isOverviewRoute && state.selectedStatus == TicketStatus.AI_REPLIED,
                         onTap: () {
                           cubit.setStatusFilter(TicketStatus.AI_REPLIED);
                           if (isDrawer) Navigator.of(context).maybePop();
+                          try {
+                            context.go('/tickets');
+                          } catch (_) {}
                         },
                       ),
 
@@ -217,10 +241,13 @@ class _AppSidebarFull extends StatelessWidget {
                         label: 'Resolved',
                         count: stats?.resolved,
                         color: tokens.statusResolved,
-                        isSelected: state.selectedStatus == TicketStatus.RESOLVED,
+                        isSelected: !isOverviewRoute && state.selectedStatus == TicketStatus.RESOLVED,
                         onTap: () {
                           cubit.setStatusFilter(TicketStatus.RESOLVED);
                           if (isDrawer) Navigator.of(context).maybePop();
+                          try {
+                            context.go('/tickets');
+                          } catch (_) {}
                         },
                       ),
                     ],
@@ -332,6 +359,14 @@ class _AppSidebarRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
 
+    String currentPath = '';
+    try {
+      currentPath = GoRouterState.of(context).matchedLocation;
+    } catch (_) {
+      currentPath = '/tickets';
+    }
+    final isOverviewRoute = currentPath == '/overview' || currentPath == '/';
+
     return Container(
       width: 68,
       decoration: BoxDecoration(
@@ -363,10 +398,52 @@ class _AppSidebarRail extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
-                  _RailIconItem(icon: Icons.bar_chart_rounded, tooltip: 'Overview', isSelected: true, onTap: () {}),
-                  _RailIconItem(icon: Icons.inbox_outlined, tooltip: 'Tickets Queue', isSelected: false, onTap: () {}),
-                  _RailIconItem(icon: Icons.psychology_outlined, tooltip: 'Knowledge Base', isSelected: false, onTap: () {}),
-                  _RailIconItem(icon: Icons.tune_rounded, tooltip: 'Settings', isSelected: false, onTap: () {}),
+                  _RailIconItem(
+                    icon: Icons.bar_chart_rounded,
+                    tooltip: 'Overview',
+                    isSelected: isOverviewRoute,
+                    onTap: () {
+                      try {
+                        context.go('/overview');
+                      } catch (_) {}
+                    },
+                  ),
+                  _RailIconItem(
+                    icon: Icons.inbox_outlined,
+                    tooltip: 'Tickets Queue',
+                    isSelected: !isOverviewRoute,
+                    onTap: () {
+                      try {
+                        context.go('/tickets');
+                      } catch (_) {}
+                    },
+                  ),
+                  _RailIconItem(
+                    icon: Icons.psychology_outlined,
+                    tooltip: 'Knowledge Base',
+                    isSelected: false,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Knowledge Base: Connected to Spring AI pgvector RAG store.'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                  ),
+                  _RailIconItem(
+                    icon: Icons.tune_rounded,
+                    tooltip: 'Settings',
+                    isSelected: false,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Settings: Spring Boot session auth & Mailgun routes active.'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

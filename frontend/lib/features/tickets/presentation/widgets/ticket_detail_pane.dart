@@ -19,7 +19,7 @@ class TicketDetailPane extends StatelessWidget {
     if (ticketId == null) {
       return CognitiveDeskOverview(
         onTicketSelected: (id) => context.go('/tickets/$id'),
-        onViewAll: () {},
+        onViewAll: () => context.go('/tickets'),
       );
     }
 

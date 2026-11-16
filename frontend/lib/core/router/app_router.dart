@@ -6,6 +6,7 @@ import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/tickets/presentation/bloc/ticket_list_cubit.dart';
+import '../../features/tickets/presentation/pages/overview_page.dart';
 import '../../features/tickets/presentation/pages/ticket_dashboard_page.dart';
 import '../di/service_locator.dart';
 
@@ -31,7 +32,7 @@ class AppRouter {
   AppRouter({required this.authCubit});
 
   late final GoRouter router = GoRouter(
-    initialLocation: '/tickets',
+    initialLocation: '/overview',
     refreshListenable: GoRouterRefreshStream(authCubit.stream),
     redirect: (context, state) {
       final authState = authCubit.state;
@@ -45,7 +46,7 @@ class AppRouter {
       }
 
       if (isAuthenticated && isLoggingIn) {
-        return '/tickets';
+        return '/overview';
       }
 
       return null;
@@ -62,6 +63,15 @@ class AppRouter {
           child: child,
         ),
         routes: [
+          GoRoute(
+            path: '/',
+            redirect: (context, state) => '/overview',
+          ),
+          GoRoute(
+            path: '/overview',
+            name: 'overview',
+            builder: (context, state) => const OverviewPage(),
+          ),
           GoRoute(
             path: '/tickets',
             name: 'tickets',
