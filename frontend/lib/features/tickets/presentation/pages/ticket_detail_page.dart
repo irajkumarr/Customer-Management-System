@@ -18,23 +18,8 @@ class TicketDetailPage extends StatelessWidget {
     try {
       context.read<TicketDetailCubit>();
       return Scaffold(
-        body: TicketConversationView(
-          ticketId: ticketId,
-          showBackButton: true,
-          onBack: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/tickets');
-            }
-          },
-        ),
-      );
-    } catch (_) {
-      return BlocProvider<TicketDetailCubit>(
-        create: (_) => sl<TicketDetailCubit>()..loadTicket(ticketId),
-        child: Scaffold(
-          body: TicketConversationView(
+        body: SafeArea(
+          child: TicketConversationView(
             ticketId: ticketId,
             showBackButton: true,
             onBack: () {
@@ -44,6 +29,25 @@ class TicketDetailPage extends StatelessWidget {
                 context.go('/tickets');
               }
             },
+          ),
+        ),
+      );
+    } catch (_) {
+      return BlocProvider<TicketDetailCubit>(
+        create: (_) => sl<TicketDetailCubit>()..loadTicket(ticketId),
+        child: Scaffold(
+          body: SafeArea(
+            child: TicketConversationView(
+              ticketId: ticketId,
+              showBackButton: true,
+              onBack: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/tickets');
+                }
+              },
+            ),
           ),
         ),
       );

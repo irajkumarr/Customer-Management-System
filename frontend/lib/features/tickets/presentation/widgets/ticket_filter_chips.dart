@@ -21,155 +21,161 @@ class TicketFilterChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hasActiveFilters = selectedStatus != null || selectedCategory != null;
+    final hasActiveFilter = selectedStatus != null || selectedCategory != null;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Clear all filters if active
-          if (hasActiveFilters) ...[
-            ActionChip(
-              avatar: const Icon(Icons.close_rounded, size: 14, color: AppColors.statusEscalated),
-              label: const Text('Clear All', style: TextStyle(color: AppColors.statusEscalated, fontSize: 12)),
-              backgroundColor: AppColors.statusEscalated.withValues(alpha: 0.08),
-              side: BorderSide(color: AppColors.statusEscalated.withValues(alpha: 0.3)),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              onPressed: () {
-                onStatusChanged(null);
-                onCategoryChanged(null);
-              },
-            ),
-            const SizedBox(width: 8),
-          ],
-
-          // All Status chip
-          ChoiceChip(
-            label: const Text('All Status'),
-            selected: selectedStatus == null,
-            onSelected: (_) => onStatusChanged(null),
-          ),
-          const SizedBox(width: 6),
-
-          // Individual Status chips
-          ...TicketStatus.values.map(
-            (status) {
-              final isSelected = selectedStatus == status;
-              return Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: Text(status.displayName),
-                  selected: isSelected,
-                  selectedColor: status.color.withValues(alpha: isDark ? 0.25 : 0.15),
-                  checkmarkColor: status.color,
-                  avatar: isSelected
-                      ? null
-                      : Container(
-                          width: 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color: status.color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                  labelStyle: TextStyle(
-                    color: isSelected ? status.color : null,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                    fontSize: 12,
-                  ),
-                  side: BorderSide(
-                    color: isSelected ? status.color : tokens.cardBorder,
-                  ),
-                  onSelected: (selected) {
-                    onStatusChanged(selected ? status : null);
-                  },
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(width: 4),
-          Container(
-            height: 20,
-            width: 1,
-            color: tokens.dividerColor,
-          ),
-          const SizedBox(width: 8),
-
-          // Category Dropdown / Menu
-          PopupMenuButton<TicketCategory?>(
-            initialValue: selectedCategory,
-            tooltip: 'Filter by Category',
-            onSelected: onCategoryChanged,
+          // Status Selector Dropdown / Menu
+          PopupMenuButton<TicketStatus?>(
+            onSelected: onStatusChanged,
+            tooltip: 'Filter by Status',
+            position: PopupMenuPosition.under,
             itemBuilder: (context) => [
-              const PopupMenuItem<TicketCategory?>(
+              const PopupMenuItem<TicketStatus?>(
                 value: null,
-                child: Text('All Categories', style: TextStyle(fontSize: 13)),
+                child: Text('All Statuses', style: TextStyle(fontSize: 12.5)),
               ),
               const PopupMenuDivider(height: 1),
-              ...TicketCategory.values.map(
-                (cat) => PopupMenuItem<TicketCategory?>(
-                  value: cat,
+              ...TicketStatus.values.map(
+                (status) => PopupMenuItem<TicketStatus?>(
+                  value: status,
                   child: Row(
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 7,
+                        height: 7,
                         decoration: BoxDecoration(
-                          color: cat.color,
+                          color: status.color,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(cat.displayName, style: const TextStyle(fontSize: 13)),
+                      Text(status.displayName, style: const TextStyle(fontSize: 12.5)),
                     ],
                   ),
                 ),
               ),
             ],
             child: Container(
-              height: 32,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
               decoration: BoxDecoration(
-                color: selectedCategory != null
-                    ? selectedCategory!.color.withValues(alpha: 0.1)
-                    : (isDark ? const Color(0xFF1E293B) : Colors.white),
-                borderRadius: BorderRadius.circular(8),
+                color: selectedStatus != null
+                    ? (isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7))
+                    : (isDark ? const Color(0xFF18181B) : const Color(0xFFF4F4F5)),
+                borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: selectedCategory != null
-                      ? selectedCategory!.color
+                  color: selectedStatus != null
+                      ? AppColors.neutral900
                       : tokens.cardBorder,
+                  width: 0.8,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (selectedCategory != null) ...[
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        color: selectedCategory!.color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
                   Text(
-                    selectedCategory?.displayName ?? 'Category',
+                    selectedStatus?.displayName ?? 'Status',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: selectedCategory != null ? FontWeight.w600 : FontWeight.w500,
-                      color: selectedCategory?.color,
+                      fontSize: 11.5,
+                      fontWeight: selectedStatus != null
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      color: isDark ? Colors.white : AppColors.neutral950,
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.keyboard_arrow_down_rounded, size: 16),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 14,
+                    color: tokens.subtleText,
+                  ),
                 ],
               ),
             ),
           ),
+          const SizedBox(width: 6),
+
+          // Category Selector Dropdown / Menu
+          PopupMenuButton<TicketCategory?>(
+            onSelected: onCategoryChanged,
+            tooltip: 'Filter by Category',
+            position: PopupMenuPosition.under,
+            itemBuilder: (context) => [
+              const PopupMenuItem<TicketCategory?>(
+                value: null,
+                child: Text('All Categories', style: TextStyle(fontSize: 12.5)),
+              ),
+              const PopupMenuDivider(height: 1),
+              ...TicketCategory.values.map(
+                (cat) => PopupMenuItem<TicketCategory?>(
+                  value: cat,
+                  child: Text(cat.displayName, style: const TextStyle(fontSize: 12.5)),
+                ),
+              ),
+            ],
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: selectedCategory != null
+                    ? (isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7))
+                    : (isDark ? const Color(0xFF18181B) : const Color(0xFFF4F4F5)),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: selectedCategory != null
+                      ? AppColors.neutral900
+                      : tokens.cardBorder,
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    selectedCategory?.displayName ?? 'Category',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: selectedCategory != null
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      color: isDark ? Colors.white : AppColors.neutral950,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 14,
+                    color: tokens.subtleText,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          if (hasActiveFilter) ...[
+            const SizedBox(width: 6),
+            InkWell(
+              onTap: () {
+                onStatusChanged(null);
+                onCategoryChanged(null);
+              },
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Text(
+                  'Reset',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    color: tokens.subtleText,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

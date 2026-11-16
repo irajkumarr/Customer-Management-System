@@ -6,6 +6,7 @@ WORKDIR /workspace
 COPY pom.xml .
 COPY .mvn .mvn
 COPY mvnw .
+RUN chmod +x mvnw
 
 # Download dependencies in offline mode
 RUN ./mvnw dependency:go-offline -B || true

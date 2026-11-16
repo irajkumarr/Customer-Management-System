@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/helpdesk_theme_tokens.dart';
+import '../../../auth/presentation/bloc/auth_cubit.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/ticket_list_cubit.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/ticket_detail_pane.dart';
@@ -33,45 +35,55 @@ class _TicketDashboardPageState extends State<TicketDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveBuilder(
-      builder: (context, sizingInformation) {
-        final width = MediaQuery.sizeOf(context).width;
-        final isDesktopOrMedium = width >= 840;
-        final isMedium = width >= 840 && width < 1200;
-
-        if (isDesktopOrMedium) {
-          return _DesktopLayout(
-            selectedTicketId: widget.selectedTicketId,
-            isMedium: isMedium,
-          );
-        } else {
-          if (widget.selectedTicketId != null) {
-            return TicketDetailPage(ticketId: widget.selectedTicketId!);
-          }
-
-          return Scaffold(
-            key: _scaffoldKey,
-            drawer: const Drawer(
-              child: AppSidebar(isDrawer: true),
-            ),
-            body: TicketListPane(
-              isDesktop: false,
-              selectedTicketId: null,
-              onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-              onTicketSelected: (ticketId) => context.go('/tickets/$ticketId'),
-            ),
-          );
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, authState) {
+        if (authState is Authenticated) {
+          context.read<TicketListCubit>().loadInitialData();
         }
       },
+      child: ResponsiveBuilder(
+        builder: (context, sizingInformation) {
+          final width = MediaQuery.sizeOf(context).width;
+          final isDesktopOrMedium = width >= 840;
+          final isMedium = width >= 840 && width < 1120;
+
+          if (isDesktopOrMedium) {
+            return _DesktopThreeRegionLayout(
+              selectedTicketId: widget.selectedTicketId,
+              isMedium: isMedium,
+            );
+          } else {
+            // Mobile flow: If ticket selected -> detail screen, else list screen with drawer
+            if (widget.selectedTicketId != null) {
+              return TicketDetailPage(ticketId: widget.selectedTicketId!);
+            }
+
+            return Scaffold(
+              key: _scaffoldKey,
+              drawer: const Drawer(
+                child: AppSidebar(isDrawer: true),
+              ),
+              body: SafeArea(
+                child: TicketListPane(
+                  isDesktop: false,
+                  selectedTicketId: null,
+                  onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+                  onTicketSelected: (ticketId) => context.go('/tickets/$ticketId'),
+                ),
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 }
 
-class _DesktopLayout extends StatelessWidget {
+class _DesktopThreeRegionLayout extends StatelessWidget {
   final String? selectedTicketId;
   final bool isMedium;
 
-  const _DesktopLayout({
+  const _DesktopThreeRegionLayout({
     this.selectedTicketId,
     this.isMedium = false,
   });
@@ -81,15 +93,15 @@ class _DesktopLayout extends StatelessWidget {
     final tokens = context.tokens;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final sidebarWidth = isMedium ? 68.0 : 240.0;
-    final listWidth = isMedium ? 380.0 : 400.0;
+    final sidebarWidth = isMedium ? 64.0 : 240.0;
+    final listWidth = isMedium ? 340.0 : 380.0;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Left Column: App Sidebar (Full or Compact Rail)
+          // 1. Region 1: Navigation Sidebar (Full or Compact Rail)
           SizedBox(
             width: sidebarWidth,
             child: AppSidebar(
@@ -98,10 +110,10 @@ class _DesktopLayout extends StatelessWidget {
             ),
           ),
 
-          // Divider
+          // Hairline separator
           VerticalDivider(width: 1, thickness: 1, color: tokens.dividerColor),
 
-          // Center Column: Ticket List Pane
+          // 2. Region 2: Ticket Queue List
           SizedBox(
             width: listWidth,
             child: TicketListPane(
@@ -111,10 +123,10 @@ class _DesktopLayout extends StatelessWidget {
             ),
           ),
 
-          // Divider
+          // Hairline separator
           VerticalDivider(width: 1, thickness: 1, color: tokens.dividerColor),
 
-          // Right Column: Ticket Detail Pane (Expanded Workspace)
+          // 3. Region 3: Conversation Workspace (Expanded)
           Expanded(
             child: TicketDetailPane(ticketId: selectedTicketId),
           ),

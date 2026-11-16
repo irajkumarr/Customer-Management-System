@@ -3,6 +3,7 @@ package com.rajkumartimalsina.backend.ai.service;
 import com.rajkumartimalsina.backend.ai.dto.AiAgentResponse;
 import com.rajkumartimalsina.backend.common.exception.ResourceNotFoundException;
 import com.rajkumartimalsina.backend.email.dto.EmailSendRequest;
+import com.rajkumartimalsina.backend.email.dto.EmailSendResult;
 import com.rajkumartimalsina.backend.email.service.EmailService;
 import com.rajkumartimalsina.backend.message.entity.MessageEntity;
 import com.rajkumartimalsina.backend.message.enums.MessageSenderType;
@@ -122,8 +123,14 @@ public class TicketAiProcessingService {
                 references
         );
 
-        emailService.sendEmail(emailRequest);
-        log.info("Outbound email dispatched for ticket '{}' to '{}'", ticketId, customerEmail);
+        EmailSendResult sendResult = emailService.sendEmail(emailRequest);
+        if (sendResult.success()) {
+            log.info("Outbound email dispatched successfully for ticket '{}' to '{}' (Message-ID: {})",
+                    ticketId, customerEmail, sendResult.messageId());
+        } else {
+            log.error("Outbound email delivery failed for ticket '{}' to '{}': {}",
+                    ticketId, customerEmail, sendResult.errorMessage());
+        }
     }
 
     private TicketCategory parseCategory(String categoryStr) {

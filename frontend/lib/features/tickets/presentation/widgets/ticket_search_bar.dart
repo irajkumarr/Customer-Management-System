@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/helpdesk_theme_tokens.dart';
 
 class TicketSearchBar extends StatefulWidget {
   final String initialQuery;
@@ -28,7 +30,8 @@ class _TicketSearchBarState extends State<TicketSearchBar> {
   @override
   void didUpdateWidget(TicketSearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialQuery != widget.initialQuery && _controller.text != widget.initialQuery) {
+    if (oldWidget.initialQuery != widget.initialQuery &&
+        _controller.text != widget.initialQuery) {
       _controller.text = widget.initialQuery;
     }
   }
@@ -47,39 +50,60 @@ class _TicketSearchBarState extends State<TicketSearchBar> {
       widget.onSearch('');
       return;
     }
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+    _debounceTimer = Timer(const Duration(milliseconds: 250), () {
       widget.onSearch(query.trim());
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    final tokens = context.tokens;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      height: 36,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF18181B) : const Color(0xFFF4F4F5),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: tokens.cardBorder, width: 0.8),
+      ),
       child: TextField(
         controller: _controller,
-        textInputAction: TextInputAction.search,
-        onSubmitted: (query) {
-          _debounceTimer?.cancel();
-          widget.onSearch(query.trim());
-        },
+        onChanged: _onQueryChanged,
+        style: TextStyle(
+          fontSize: 12.5,
+          color: isDark ? Colors.white : AppColors.neutral950,
+        ),
         decoration: InputDecoration(
-          hintText: 'Search tickets by subject, customer, email...',
-          prefixIcon: const Icon(Icons.search_rounded, size: 18),
+          hintText: 'Search tickets or customers...',
+          hintStyle: TextStyle(
+            fontSize: 12.5,
+            color: tokens.subtleText,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            size: 16,
+            color: tokens.subtleText,
+          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 16),
-                  tooltip: 'Clear search',
+                  icon: const Icon(Icons.close_rounded, size: 14),
+                  visualDensity: VisualDensity.compact,
                   onPressed: () {
                     _controller.clear();
-                    _debounceTimer?.cancel();
                     widget.onSearch('');
+                    setState(() {});
                   },
                 )
               : null,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          filled: false,
         ),
-        onChanged: _onQueryChanged,
       ),
     );
   }

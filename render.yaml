@@ -1,0 +1,56 @@
+services:
+  - type: web
+    name: customer-management-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: cms-postgres
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: cms-postgres
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: cms-postgres
+          property: password
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: SESSION_COOKIE_SAME_SITE
+        value: none
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: ADMIN_INITIAL_USERNAME
+        value: admin
+      - key: ADMIN_INITIAL_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_CHAT_MODEL
+        value: gemini-1.5-flash
+      - key: GEMINI_EMBEDDING_MODEL
+        value: text-embedding-004
+      - key: MAILGUN_API_KEY
+        sync: false
+      - key: MAILGUN_DOMAIN
+        sync: false
+      - key: MAILGUN_BASE_URL
+        value: https://api.mailgun.net
+      - key: MAILGUN_FROM_EMAIL
+        sync: false
+      - key: MAILGUN_WEBHOOK_SIGNING_KEY
+        sync: false
+
+databases:
+  - name: cms-postgres
+    plan: free
+    databaseName: customer_management_db
+    user: postgres
+    region: oregon

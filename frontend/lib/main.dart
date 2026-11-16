@@ -10,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initServiceLocator();
 
-  // Check existing session status on application launch
+  // Check existing session status on application launch (non-blocking)
   sl<AuthCubit>().checkAuthStatus();
 
   runApp(const CustomerManagementApp());
@@ -27,8 +27,8 @@ class CustomerManagementApp extends StatelessWidget {
         title: 'AI Helpdesk Admin',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        // darkTheme: AppTheme.darkTheme,
-        // themeMode: ThemeMode.system,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
         routerConfig: sl<AppRouter>().router,
       ),
     );

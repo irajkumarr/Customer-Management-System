@@ -4,7 +4,8 @@ class ApiConstants {
   // Base URL (defaults to localhost:8080, can be overridden via environment)
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8080',
+    // defaultValue: 'http://localhost:8080',
+    defaultValue: 'http://192.168.100.90:8080',
   );
 
   // Auth endpoints
