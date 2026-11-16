@@ -178,250 +178,271 @@ class _TicketConversationViewState extends State<TicketConversationView> {
             child: Column(
               children: [
                 // 1. Top Context & Action Bar (Intercom / Linear style)
-                Container(
-                  height: 54,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: tokens.dividerColor),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      if (widget.showBackButton) ...[
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                          visualDensity: VisualDensity.compact,
-                          tooltip: 'Back to queue',
-                          onPressed: widget.onBack,
-                        ),
-                        const SizedBox(width: 4),
-                      ],
+                LayoutBuilder(
+                  builder: (context, barConstraints) {
+                    final isNarrow = barConstraints.maxWidth < 620;
 
-                      // Breadcrumb: Customer > Ticket
-                      Expanded(
-                        child: Row(
+                    if (isNarrow) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: tokens.dividerColor),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Flexible(
-                              child: Text(
-                                ticket.customer.name ?? ticket.customer.email,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? Colors.white
-                                      : AppColors.neutral950,
+                            Row(
+                              children: [
+                                if (widget.showBackButton) ...[
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_back_rounded,
+                                      size: 18,
+                                    ),
+                                    visualDensity: VisualDensity.compact,
+                                    tooltip: 'Back to queue',
+                                    onPressed: widget.onBack,
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        ticket.customer.name ??
+                                            ticket.customer.email,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark
+                                              ? Colors.white
+                                              : AppColors.neutral950,
+                                        ),
+                                      ),
+                                      Text(
+                                        ticket.subject,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: tokens.subtleText,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                              ),
-                              child: Text(
-                                '›',
-                                style: TextStyle(color: tokens.subtleText),
-                              ),
-                            ),
-                            Flexible(
-                              child: Text(
-                                ticket.subject,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: tokens.subtleText,
+                                IconButton(
+                                  icon: state.isRefreshing
+                                      ? SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 1.8,
+                                            color: isDark
+                                                ? Colors.white
+                                                : AppColors.neutral900,
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.refresh_rounded,
+                                          size: 17,
+                                          color: tokens.subtleText,
+                                        ),
+                                  tooltip: 'Refresh Thread (REST)',
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: state.isRefreshing
+                                      ? null
+                                      : () => cubit.refresh(),
                                 ),
-                              ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                _buildStatusDropdown(
+                                  cubit,
+                                  ticket,
+                                  tokens,
+                                  isDark,
+                                ),
+                                _buildCategoryDropdown(
+                                  cubit,
+                                  ticket,
+                                  tokens,
+                                  isDark,
+                                ),
+                                if (ticket.status != TicketStatus.RESOLVED &&
+                                    ticket.status != TicketStatus.CLOSED)
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.neutral900,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                    onPressed: state.isUpdatingStatus
+                                        ? null
+                                        : () => cubit.updateStatus(
+                                            TicketStatus.RESOLVED,
+                                          ),
+                                    child: const Text(
+                                      'Resolve',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ],
                         ),
-                      ),
+                      );
+                    }
 
-                      const SizedBox(width: 8),
-
-                      // Status Dropdown
-                      PopupMenuButton<TicketStatus>(
-                        tooltip: 'Change Status',
-                        onSelected: (s) => cubit.updateStatus(s),
-                        itemBuilder: (context) => TicketStatus.values
-                            .map(
-                              (s) => PopupMenuItem(
-                                value: s,
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 7,
-                                      height: 7,
-                                      decoration: BoxDecoration(
-                                        color: s.color,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      s.displayName,
-                                      style: const TextStyle(fontSize: 12.5),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1E1E22)
-                                : const Color(0xFFF4F4F5),
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(
-                              color: tokens.cardBorder,
-                              width: 0.8,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: ticket.status.color,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                ticket.status.displayName,
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? Colors.white
-                                      : AppColors.neutral950,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                size: 14,
-                                color: tokens.subtleText,
-                              ),
-                            ],
-                          ),
+                    return Container(
+                      height: 54,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: tokens.dividerColor),
                         ),
                       ),
-                      const SizedBox(width: 6),
-
-                      // Category Dropdown
-                      PopupMenuButton<TicketCategory>(
-                        tooltip: 'Change Category',
-                        onSelected: (c) => cubit.updateCategory(c),
-                        itemBuilder: (context) => TicketCategory.values
-                            .map(
-                              (c) => PopupMenuItem(
-                                value: c,
-                                child: Text(
-                                  c.displayName,
-                                  style: const TextStyle(fontSize: 12.5),
-                                ),
+                      child: Row(
+                        children: [
+                          if (widget.showBackButton) ...[
+                            IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back_rounded,
+                                size: 18,
                               ),
-                            )
-                            .toList(),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1E1E22)
-                                : const Color(0xFFF4F4F5),
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(
-                              color: tokens.cardBorder,
-                              width: 0.8,
+                              visualDensity: VisualDensity.compact,
+                              tooltip: 'Back to queue',
+                              onPressed: widget.onBack,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+
+                          // Breadcrumb: Customer > Ticket
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    ticket.customer.name ??
+                                        ticket.customer.email,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? Colors.white
+                                          : AppColors.neutral950,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                  ),
+                                  child: Text(
+                                    '›',
+                                    style: TextStyle(color: tokens.subtleText),
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    ticket.subject,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: tokens.subtleText,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                ticket.category.displayName,
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: tokens.subtleText,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                size: 14,
-                                color: tokens.subtleText,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
 
-                      // Resolve Button
-                      if (ticket.status != TicketStatus.RESOLVED &&
-                          ticket.status != TicketStatus.CLOSED)
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.neutral900,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
+                          const SizedBox(width: 8),
+
+                          // Status Dropdown
+                          _buildStatusDropdown(cubit, ticket, tokens, isDark),
+                          const SizedBox(width: 6),
+
+                          // Category Dropdown
+                          _buildCategoryDropdown(cubit, ticket, tokens, isDark),
+                          const SizedBox(width: 8),
+
+                          // Resolve Button
+                          if (ticket.status != TicketStatus.RESOLVED &&
+                              ticket.status != TicketStatus.CLOSED)
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.neutral900,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              onPressed: state.isUpdatingStatus
+                                  ? null
+                                  : () => cubit.updateStatus(
+                                      TicketStatus.RESOLVED,
+                                    ),
+                              child: const Text(
+                                'Resolve',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
+
+                          const SizedBox(width: 4),
+
+                          // Manual REST Refresh Button
+                          IconButton(
+                            icon: state.isRefreshing
+                                ? SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1.8,
+                                      color: isDark
+                                          ? Colors.white
+                                          : AppColors.neutral900,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.refresh_rounded,
+                                    size: 17,
+                                    color: tokens.subtleText,
+                                  ),
+                            tooltip: 'Refresh Thread (REST)',
                             visualDensity: VisualDensity.compact,
+                            onPressed: state.isRefreshing
+                                ? null
+                                : () => cubit.refresh(),
                           ),
-                          onPressed: state.isUpdatingStatus
-                              ? null
-                              : () => cubit.updateStatus(TicketStatus.RESOLVED),
-                          child: const Text(
-                            'Resolve',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ),
-
-                      const SizedBox(width: 4),
-
-                      // Manual REST Refresh Button
-                      IconButton(
-                        icon: state.isRefreshing
-                            ? SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1.8,
-                                  color: isDark
-                                      ? Colors.white
-                                      : AppColors.neutral900,
-                                ),
-                              )
-                            : Icon(
-                                Icons.refresh_rounded,
-                                size: 17,
-                                color: tokens.subtleText,
-                              ),
-                        tooltip: 'Refresh Thread (REST)',
-                        visualDensity: VisualDensity.compact,
-                        onPressed: state.isRefreshing
-                            ? null
-                            : () => cubit.refresh(),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
 
                 // 2. Main Body Split: Conversation Column + Context Sidebar
@@ -923,12 +944,17 @@ class _TicketConversationViewState extends State<TicketConversationView> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Ctrl+Enter to send',
-                  style: TextStyle(fontSize: 11, color: tokens.subtleText),
+                Flexible(
+                  child: Text(
+                    'Ctrl+Enter to send',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: tokens.subtleText),
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.neutral900,
@@ -1056,6 +1082,125 @@ class _TicketConversationViewState extends State<TicketConversationView> {
     }
 
     return Padding(padding: const EdgeInsets.all(16), child: content);
+  }
+
+  Widget _buildStatusDropdown(
+    TicketDetailCubit cubit,
+    TicketDetailEntity ticket,
+    HelpdeskThemeTokens tokens,
+    bool isDark,
+  ) {
+    return PopupMenuButton<TicketStatus>(
+      tooltip: 'Change Status',
+      onSelected: (s) => cubit.updateStatus(s),
+      itemBuilder: (context) => TicketStatus.values
+          .map(
+            (s) => PopupMenuItem(
+              value: s,
+              child: Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: s.color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(s.displayName, style: const TextStyle(fontSize: 12.5)),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF4F4F5),
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(color: tokens.cardBorder, width: 0.8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: ticket.status.color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              ticket.status.displayName,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : AppColors.neutral950,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 14,
+              color: tokens.subtleText,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryDropdown(
+    TicketDetailCubit cubit,
+    TicketDetailEntity ticket,
+    HelpdeskThemeTokens tokens,
+    bool isDark,
+  ) {
+    return PopupMenuButton<TicketCategory>(
+      tooltip: 'Change Category',
+      onSelected: (c) => cubit.updateCategory(c),
+      itemBuilder: (context) => TicketCategory.values
+          .map(
+            (c) => PopupMenuItem(
+              value: c,
+              child: Text(
+                c.displayName,
+                style: const TextStyle(fontSize: 12.5),
+              ),
+            ),
+          )
+          .toList(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF4F4F5),
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(color: tokens.cardBorder, width: 0.8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              ticket.category.displayName,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+                color: tokens.subtleText,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 14,
+              color: tokens.subtleText,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -33,14 +33,19 @@ class LoginPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          return Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: LoginCard(
-                authState: state,
-                onSubmit: (username, password) {
-                  context.read<AuthCubit>().login(username, password);
-                },
+          final screenWidth = MediaQuery.sizeOf(context).width;
+          final hPadding = screenWidth < 400 ? 14.0 : 24.0;
+
+          return SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: hPadding, vertical: 24),
+                child: LoginCard(
+                  authState: state,
+                  onSubmit: (username, password) {
+                    context.read<AuthCubit>().login(username, password);
+                  },
+                ),
               ),
             ),
           );

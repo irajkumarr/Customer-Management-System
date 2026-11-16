@@ -49,6 +49,8 @@ class _LoginCardState extends State<LoginCard> {
         ? const Color(0xFF27272A)
         : const Color(0xFFE4E4E7);
     final primaryTextColor = isDark ? Colors.white : AppColors.neutral950;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final hCardPadding = screenWidth < 400 ? 18.0 : 28.0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -68,7 +70,7 @@ class _LoginCardState extends State<LoginCard> {
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+            padding: EdgeInsets.symmetric(horizontal: hCardPadding, vertical: 32),
             child: Form(
               key: _formKey,
               child: Column(

@@ -85,9 +85,12 @@ class _OverviewPageState extends State<OverviewPage> {
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
             ),
-            body: CognitiveDeskOverview(
-              onTicketSelected: (ticketId) => context.go('/tickets/$ticketId'),
-              onViewAll: () => context.go('/tickets'),
+            body: SafeArea(
+              bottom: true,
+              child: CognitiveDeskOverview(
+                onTicketSelected: (ticketId) => context.go('/tickets/$ticketId'),
+                onViewAll: () => context.go('/tickets'),
+              ),
             ),
           );
         }

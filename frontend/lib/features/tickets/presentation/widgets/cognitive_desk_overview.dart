@@ -66,10 +66,14 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
           }
         }
 
+        final screenWidth = MediaQuery.sizeOf(context).width;
+        final hPadding = screenWidth < 640 ? 14.0 : 24.0;
+        final vPadding = screenWidth < 640 ? 14.0 : 20.0;
+
         return Container(
           color: isDark ? const Color(0xFF09090B) : const Color(0xFFF8FAFC),
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: EdgeInsets.symmetric(horizontal: hPadding, vertical: vPadding),
             children: [
               // 1. Top Breadcrumb & Actions Bar
               _buildTopHeaderBar(context, state, tokens, isDark),
@@ -179,112 +183,195 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
     final dateRangeStr =
         '${DateFormat('MMM d').format(now.subtract(const Duration(days: 30)))} - ${DateFormat('MMM d, yyyy').format(now)}';
 
-    return Row(
-      children: [
-        // Title with Icon
-        Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF18181B) : Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: tokens.cardBorder, width: 0.8),
-          ),
-          alignment: Alignment.center,
-          child: Icon(
-            Icons.dashboard_outlined,
-            size: 18,
-            color: isDark ? Colors.white : AppColors.neutral900,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Customer Support Overview',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-                color: isDark ? Colors.white : AppColors.neutral950,
-              ),
-            ),
-            const SizedBox(height: 1),
-            Text(
-              'Live helpdesk queue telemetry & operational insights',
-              style: TextStyle(fontSize: 11.5, color: tokens.subtleText),
-            ),
-          ],
-        ),
-        const Spacer(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 640;
 
-        // Date Range Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF18181B) : Colors.white,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: tokens.cardBorder, width: 0.8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+        if (isNarrow) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: 13,
-                color: tokens.subtleText,
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF18181B) : Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: tokens.cardBorder, width: 0.8),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.dashboard_outlined,
+                      size: 17,
+                      color: isDark ? Colors.white : AppColors.neutral900,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Customer Support Overview',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                            color: isDark ? Colors.white : AppColors.neutral950,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          'Live helpdesk queue telemetry',
+                          style: TextStyle(fontSize: 11, color: tokens.subtleText),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.outlined(
+                    visualDensity: VisualDensity.compact,
+                    tooltip: 'Refresh Telemetry',
+                    icon: state.isRefreshing
+                        ? const SizedBox(
+                            width: 13,
+                            height: 13,
+                            child: CircularProgressIndicator(strokeWidth: 1.8),
+                          )
+                        : const Icon(Icons.refresh_rounded, size: 15),
+                    onPressed: state.isRefreshing
+                        ? null
+                        : () => context.read<TicketListCubit>().refresh(),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              Text(
-                dateRangeStr,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.white : AppColors.neutral800,
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF18181B) : Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: tokens.cardBorder, width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 12,
+                      color: tokens.subtleText,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      dateRangeStr,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white : AppColors.neutral800,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-        ),
-        const SizedBox(width: 8),
+          );
+        }
 
-        // REST Refresh Button
-        IconButton.outlined(
-          visualDensity: VisualDensity.compact,
-          tooltip: 'Refresh Telemetry',
-          icon: state.isRefreshing
-              ? const SizedBox(
-                  width: 13,
-                  height: 13,
-                  child: CircularProgressIndicator(strokeWidth: 1.8),
-                )
-              : const Icon(Icons.refresh_rounded, size: 15),
-          onPressed: state.isRefreshing
-              ? null
-              : () => context.read<TicketListCubit>().refresh(),
-        ),
-        const SizedBox(width: 8),
-
-        // Go to Tickets Button
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.neutral900,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
+        return Row(
+          children: [
+            // Title with Icon
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF18181B) : Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: tokens.cardBorder, width: 0.8),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.dashboard_outlined,
+                size: 18,
+                color: isDark ? Colors.white : AppColors.neutral900,
+              ),
             ),
-            visualDensity: VisualDensity.compact,
-          ),
-          onPressed: widget.onViewAll,
-          icon: const Icon(Icons.inbox_outlined, size: 14),
-          label: const Text(
-            'Open Workspace',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          ),
-        ),
-      ],
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Customer Support Overview',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                    color: isDark ? Colors.white : AppColors.neutral950,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  'Live helpdesk queue telemetry & operational insights',
+                  style: TextStyle(fontSize: 11.5, color: tokens.subtleText),
+                ),
+              ],
+            ),
+            const Spacer(),
+
+            // Date Range Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF18181B) : Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: tokens.cardBorder, width: 0.8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 13,
+                    color: tokens.subtleText,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    dateRangeStr,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white : AppColors.neutral800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // REST Refresh Button
+            IconButton.outlined(
+              visualDensity: VisualDensity.compact,
+              tooltip: 'Refresh Telemetry',
+              icon: state.isRefreshing
+                  ? const SizedBox(
+                      width: 13,
+                      height: 13,
+                      child: CircularProgressIndicator(strokeWidth: 1.8),
+                    )
+                  : const Icon(Icons.refresh_rounded, size: 15),
+              onPressed: state.isRefreshing
+                  ? null
+                  : () => context.read<TicketListCubit>().refresh(),
+            ),
+            const SizedBox(width: 8),
+          ],
+        );
+      },
     );
   }
 
@@ -302,9 +389,14 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardWidth = constraints.maxWidth >= 1000
-            ? (constraints.maxWidth - (4 * 10)) / 5
-            : (constraints.maxWidth - 10) / 2;
+        final availableWidth = constraints.maxWidth.isFinite && constraints.maxWidth > 0
+            ? constraints.maxWidth
+            : 600.0;
+        final cardWidth = availableWidth >= 1000
+            ? (availableWidth - (4 * 10)) / 5
+            : (availableWidth >= 540
+                ? (availableWidth - 10) / 2
+                : availableWidth);
 
         return Wrap(
           spacing: 10,
@@ -409,110 +501,196 @@ class _CognitiveDeskOverviewState extends State<CognitiveDeskOverview> {
     required HelpdeskThemeTokens tokens,
     required bool isDark,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: tokens.cardBorder, width: 0.8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Table Card Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
-            child: Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Customer Support Queue',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
-                        color: isDark ? Colors.white : AppColors.neutral950,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Live inbound ticket activity and triage status',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: tokens.subtleText,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth.isFinite && constraints.maxWidth > 0
+            ? constraints.maxWidth
+            : 650.0;
+        final isNarrow = availableWidth < 620;
+        final tableWidth = availableWidth > 650 ? availableWidth : 650.0;
 
-                // Filter Pills (All, AI Replied, Escalated, In Progress, New)
-                _buildFilterPill(label: 'All', status: null, isDark: isDark),
-                const SizedBox(width: 4),
-                _buildFilterPill(
-                  label: 'AI Replied',
-                  status: TicketStatus.AI_REPLIED,
-                  isDark: isDark,
-                ),
-                const SizedBox(width: 4),
-                _buildFilterPill(
-                  label: 'Escalated',
-                  status: TicketStatus.ESCALATED_TO_HUMAN,
-                  isDark: isDark,
-                ),
-                const SizedBox(width: 4),
-                _buildFilterPill(
-                  label: 'In Progress',
-                  status: TicketStatus.IN_PROGRESS,
-                  isDark: isDark,
-                ),
-              ],
-            ),
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: tokens.cardBorder, width: 0.8),
           ),
-          const Divider(height: 1),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Table Card Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+                child: isNarrow
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Customer Support Queue',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                              color: isDark ? Colors.white : AppColors.neutral950,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Live inbound ticket activity and triage status',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: tokens.subtleText,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildFilterPill(
+                                  label: 'All',
+                                  status: null,
+                                  isDark: isDark,
+                                ),
+                                const SizedBox(width: 4),
+                                _buildFilterPill(
+                                  label: 'AI Replied',
+                                  status: TicketStatus.AI_REPLIED,
+                                  isDark: isDark,
+                                ),
+                                const SizedBox(width: 4),
+                                _buildFilterPill(
+                                  label: 'Escalated',
+                                  status: TicketStatus.ESCALATED_TO_HUMAN,
+                                  isDark: isDark,
+                                ),
+                                const SizedBox(width: 4),
+                                _buildFilterPill(
+                                  label: 'In Progress',
+                                  status: TicketStatus.IN_PROGRESS,
+                                  isDark: isDark,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Customer Support Queue',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                  color: isDark ? Colors.white : AppColors.neutral950,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Live inbound ticket activity and triage status',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: tokens.subtleText,
+                                ),
+                              ),
+                            ],
+                          ),
 
-          // Column Headers
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-            color: isDark ? const Color(0xFF141416) : const Color(0xFFFAFAFA),
-            child: Row(
-              children: [
-                Expanded(flex: 3, child: _colHeader('CUSTOMER')),
-                Expanded(flex: 5, child: _colHeader('SUBJECT')),
-                Expanded(flex: 2, child: _colHeader('CATEGORY')),
-                Expanded(flex: 2, child: _colHeader('STATUS')),
-                Expanded(
-                  flex: 2,
-                  child: _colHeader('TIME', align: TextAlign.right),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
+                          // Filter Pills (All, AI Replied, Escalated, In Progress, New)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildFilterPill(
+                                label: 'All',
+                                status: null,
+                                isDark: isDark,
+                              ),
+                              const SizedBox(width: 4),
+                              _buildFilterPill(
+                                label: 'AI Replied',
+                                status: TicketStatus.AI_REPLIED,
+                                isDark: isDark,
+                              ),
+                              const SizedBox(width: 4),
+                              _buildFilterPill(
+                                label: 'Escalated',
+                                status: TicketStatus.ESCALATED_TO_HUMAN,
+                                isDark: isDark,
+                              ),
+                              const SizedBox(width: 4),
+                              _buildFilterPill(
+                                label: 'In Progress',
+                                status: TicketStatus.IN_PROGRESS,
+                                isDark: isDark,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+              ),
+              const Divider(height: 1),
 
-          // Table Rows
-          if (tickets.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(32),
-              child: Center(
-                child: Text(
-                  'No tickets match the selected filter.',
-                  style: TextStyle(color: tokens.subtleText, fontSize: 12.5),
+              // Table Body with Horizontal Scroll Container on Narrow Displays
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: tableWidth,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Column Headers
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                        color: isDark ? const Color(0xFF141416) : const Color(0xFFFAFAFA),
+                        child: Row(
+                          children: [
+                            Expanded(flex: 3, child: _colHeader('CUSTOMER')),
+                            Expanded(flex: 4, child: _colHeader('SUBJECT')),
+                            Expanded(flex: 2, child: _colHeader('CATEGORY')),
+                            Expanded(flex: 3, child: _colHeader('STATUS')),
+                            Expanded(
+                              flex: 2,
+                              child: _colHeader('TIME', align: TextAlign.right),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1),
+
+                      // Table Rows
+                      if (tickets.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Center(
+                            child: Text(
+                              'No tickets match the selected filter.',
+                              style: TextStyle(color: tokens.subtleText, fontSize: 12.5),
+                            ),
+                          ),
+                        )
+                      else
+                        ...tickets.take(8).map((ticket) {
+                          return _TableRowItem(
+                            ticket: ticket,
+                            tokens: tokens,
+                            isDark: isDark,
+                            onTap: () => widget.onTicketSelected(ticket.id),
+                          );
+                        }),
+                    ],
+                  ),
                 ),
               ),
-            )
-          else
-            ...tickets.take(8).map((ticket) {
-              return _TableRowItem(
-                ticket: ticket,
-                tokens: tokens,
-                isDark: isDark,
-                onTap: () => widget.onTicketSelected(ticket.id),
-              );
-            }),
-        ],
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -1003,7 +1181,7 @@ class _VerticalBarDistributionPainter extends CustomPainter {
 }
 
 // Subcomponent: Table Row Item for Recent Tickets
-class _TableRowItem extends StatefulWidget {
+class _TableRowItem extends StatelessWidget {
   final TicketEntity ticket;
   final HelpdeskThemeTokens tokens;
   final bool isDark;
@@ -1017,15 +1195,7 @@ class _TableRowItem extends StatefulWidget {
   });
 
   @override
-  State<_TableRowItem> createState() => _TableRowItemState();
-}
-
-class _TableRowItemState extends State<_TableRowItem> {
-  bool _isHovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    final ticket = widget.ticket;
     final customerName =
         ticket.customerName != null && ticket.customerName!.isNotEmpty
         ? ticket.customerName!
@@ -1037,22 +1207,16 @@ class _TableRowItemState extends State<_TableRowItem> {
         ? customerName.substring(0, 1).toUpperCase()
         : 'CU';
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
-        onTap: widget.onTap,
+        onTap: onTap,
+        hoverColor: isDark ? const Color(0xFF141416) : const Color(0xFFF8FAFC),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           decoration: BoxDecoration(
-            color: _isHovered
-                ? (widget.isDark
-                      ? const Color(0xFF141416)
-                      : const Color(0xFFF8FAFC))
-                : Colors.transparent,
             border: Border(
-              bottom: BorderSide(color: widget.tokens.cardBorder, width: 0.8),
+              bottom: BorderSide(color: tokens.cardBorder, width: 0.8),
             ),
           ),
           child: Row(
@@ -1066,7 +1230,7 @@ class _TableRowItemState extends State<_TableRowItem> {
                       width: 22,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: widget.isDark
+                        color: isDark
                             ? const Color(0xFF27272A)
                             : const Color(0xFFF4F4F5),
                         borderRadius: BorderRadius.circular(4),
@@ -1077,7 +1241,7 @@ class _TableRowItemState extends State<_TableRowItem> {
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.bold,
-                          color: widget.isDark
+                          color: isDark
                               ? Colors.white
                               : AppColors.neutral900,
                         ),
@@ -1092,7 +1256,7 @@ class _TableRowItemState extends State<_TableRowItem> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: widget.isDark
+                          color: isDark
                               ? Colors.white
                               : AppColors.neutral950,
                         ),
@@ -1104,7 +1268,7 @@ class _TableRowItemState extends State<_TableRowItem> {
 
               // Subject
               Expanded(
-                flex: 5,
+                flex: 4,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: Text(
@@ -1113,7 +1277,7 @@ class _TableRowItemState extends State<_TableRowItem> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
-                      color: widget.isDark
+                      color: isDark
                           ? const Color(0xFFD4D4D8)
                           : AppColors.neutral800,
                     ),
@@ -1132,12 +1296,12 @@ class _TableRowItemState extends State<_TableRowItem> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: widget.isDark
+                      color: isDark
                           ? const Color(0xFF18181B)
                           : const Color(0xFFF4F4F5),
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: widget.tokens.cardBorder,
+                        color: tokens.cardBorder,
                         width: 0.8,
                       ),
                     ),
@@ -1146,7 +1310,7 @@ class _TableRowItemState extends State<_TableRowItem> {
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w500,
-                        color: widget.tokens.subtleText,
+                        color: tokens.subtleText,
                       ),
                     ),
                   ),
@@ -1155,7 +1319,7 @@ class _TableRowItemState extends State<_TableRowItem> {
 
               // Status Pill
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: Container(
                   alignment: Alignment.centerLeft,
                   child: Container(
@@ -1183,12 +1347,16 @@ class _TableRowItemState extends State<_TableRowItem> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          ticket.status.displayName,
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w600,
-                            color: ticket.status.color,
+                        Flexible(
+                          child: Text(
+                            ticket.status.displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: ticket.status.color,
+                            ),
                           ),
                         ),
                       ],
@@ -1205,7 +1373,7 @@ class _TableRowItemState extends State<_TableRowItem> {
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     fontSize: 11,
-                    color: widget.tokens.subtleText,
+                    color: tokens.subtleText,
                   ),
                 ),
               ),

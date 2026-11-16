@@ -63,11 +63,13 @@ class _TicketDashboardPageState extends State<TicketDashboardPage> {
               drawer: const Drawer(
                 child: AppSidebar(isDrawer: true),
               ),
-              body: TicketListPane(
-                isDesktop: false,
-                selectedTicketId: null,
-                onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-                onTicketSelected: (ticketId) => context.go('/tickets/$ticketId'),
+              body: SafeArea(
+                child: TicketListPane(
+                  isDesktop: false,
+                  selectedTicketId: null,
+                  onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+                  onTicketSelected: (ticketId) => context.go('/tickets/$ticketId'),
+                ),
               ),
             );
           }
