@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/customer_entity.dart';
 
 part 'customer.freezed.dart';
 part 'customer.g.dart';
@@ -14,4 +15,14 @@ abstract class Customer with _$Customer {
   }) = _Customer;
 
   factory Customer.fromJson(Map<String, dynamic> json) => _$CustomerFromJson(json);
+}
+
+extension CustomerModelX on Customer {
+  CustomerEntity toEntity() => CustomerEntity(
+        id: id,
+        email: email,
+        name: name,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
 }

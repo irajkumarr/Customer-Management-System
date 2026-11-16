@@ -3,6 +3,8 @@ import 'package:fpdart/fpdart.dart';
 import 'package:frontend/core/error/failures.dart';
 import 'package:frontend/core/network/page_response.dart';
 import 'package:frontend/features/tickets/data/models/ticket_enums.dart';
+import 'package:frontend/features/tickets/domain/entities/message_entity.dart';
+import 'package:frontend/features/tickets/domain/entities/ticket_detail_entity.dart';
 import 'package:frontend/features/tickets/domain/entities/ticket_entity.dart';
 import 'package:frontend/features/tickets/domain/entities/ticket_stats_entity.dart';
 import 'package:frontend/features/tickets/domain/repositories/ticket_repository.dart';
@@ -69,6 +71,26 @@ class FakeTicketRepository implements TicketRepository {
       return const Left(ServerFailure(message: 'Failed to fetch stats'));
     }
     return Right(sampleStats);
+  }
+
+  @override
+  Future<Either<Failure, TicketDetailEntity>> getTicketDetail(String id) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, void>> updateTicketStatus(String id, TicketStatus status) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, void>> updateTicketCategory(String id, TicketCategory category) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, MessageEntity>> sendAdminReply(String id, String body) async {
+    throw UnimplementedError();
   }
 }
 

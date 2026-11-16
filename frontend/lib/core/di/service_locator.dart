@@ -12,8 +12,13 @@ import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/tickets/data/datasources/ticket_remote_data_source.dart';
 import '../../features/tickets/data/repositories/ticket_repository_impl.dart';
 import '../../features/tickets/domain/repositories/ticket_repository.dart';
+import '../../features/tickets/domain/usecases/get_ticket_detail_usecase.dart';
 import '../../features/tickets/domain/usecases/get_ticket_stats_usecase.dart';
 import '../../features/tickets/domain/usecases/get_tickets_usecase.dart';
+import '../../features/tickets/domain/usecases/send_admin_reply_usecase.dart';
+import '../../features/tickets/domain/usecases/update_ticket_category_usecase.dart';
+import '../../features/tickets/domain/usecases/update_ticket_status_usecase.dart';
+import '../../features/tickets/presentation/bloc/ticket_detail_cubit.dart';
 import '../../features/tickets/presentation/bloc/ticket_list_cubit.dart';
 
 final sl = GetIt.instance;
@@ -71,12 +76,25 @@ Future<void> initServiceLocator({
   // Tickets - Use Cases
   sl.registerLazySingleton(() => GetTicketsUseCase(sl<TicketRepository>()));
   sl.registerLazySingleton(() => GetTicketStatsUseCase(sl<TicketRepository>()));
+  sl.registerLazySingleton(() => GetTicketDetailUseCase(sl<TicketRepository>()));
+  sl.registerLazySingleton(() => UpdateTicketStatusUseCase(sl<TicketRepository>()));
+  sl.registerLazySingleton(() => UpdateTicketCategoryUseCase(sl<TicketRepository>()));
+  sl.registerLazySingleton(() => SendAdminReplyUseCase(sl<TicketRepository>()));
 
-  // Tickets - Presentation (Cubit)
+  // Tickets - Presentation (Cubits)
   sl.registerFactory(
     () => TicketListCubit(
       getTicketsUseCase: sl<GetTicketsUseCase>(),
       getTicketStatsUseCase: sl<GetTicketStatsUseCase>(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => TicketDetailCubit(
+      getTicketDetailUseCase: sl<GetTicketDetailUseCase>(),
+      updateTicketStatusUseCase: sl<UpdateTicketStatusUseCase>(),
+      updateTicketCategoryUseCase: sl<UpdateTicketCategoryUseCase>(),
+      sendAdminReplyUseCase: sl<SendAdminReplyUseCase>(),
     ),
   );
 

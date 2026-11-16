@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/tickets/presentation/bloc/ticket_detail_cubit.dart';
 import '../../features/tickets/presentation/bloc/ticket_list_cubit.dart';
 import '../../features/tickets/presentation/pages/ticket_dashboard_page.dart';
+import '../../features/tickets/presentation/pages/ticket_detail_page.dart';
 import '../di/service_locator.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -69,9 +71,9 @@ class AppRouter {
             name: 'ticket-detail',
             builder: (context, state) {
               final id = state.pathParameters['id'] ?? '';
-              return Scaffold(
-                appBar: AppBar(title: Text('Ticket #$id')),
-                body: Center(child: Text('Ticket Detail for $id')),
+              return BlocProvider<TicketDetailCubit>(
+                create: (_) => sl<TicketDetailCubit>(),
+                child: TicketDetailPage(ticketId: id),
               );
             },
           ),

@@ -2,11 +2,15 @@ import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/page_response.dart';
+import '../../domain/entities/message_entity.dart';
+import '../../domain/entities/ticket_detail_entity.dart';
 import '../../domain/entities/ticket_entity.dart';
 import '../../domain/entities/ticket_stats_entity.dart';
 import '../../domain/repositories/ticket_repository.dart';
 import '../datasources/ticket_remote_data_source.dart';
+import '../models/message.dart';
 import '../models/ticket.dart';
+import '../models/ticket_detail.dart';
 import '../models/ticket_enums.dart';
 import '../models/ticket_stats.dart';
 
@@ -64,6 +68,46 @@ class TicketRepositoryImpl implements TicketRepository {
     try {
       final statsModel = await remoteDataSource.getStats();
       return Right(statsModel.toEntity());
+    } catch (e) {
+      return Left(_mapExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, TicketDetailEntity>> getTicketDetail(String id) async {
+    try {
+      final detailModel = await remoteDataSource.getTicketDetail(id);
+      return Right(detailModel.toEntity());
+    } catch (e) {
+      return Left(_mapExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateTicketStatus(String id, TicketStatus status) async {
+    try {
+      await remoteDataSource.updateStatus(id, status);
+      return const Right(null);
+    } catch (e) {
+      return Left(_mapExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateTicketCategory(String id, TicketCategory category) async {
+    try {
+      await remoteDataSource.updateCategory(id, category);
+      return const Right(null);
+    } catch (e) {
+      return Left(_mapExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, MessageEntity>> sendAdminReply(String id, String body) async {
+    try {
+      final messageModel = await remoteDataSource.sendAdminReply(id, body);
+      return Right(messageModel.toEntity());
     } catch (e) {
       return Left(_mapExceptionToFailure(e));
     }
