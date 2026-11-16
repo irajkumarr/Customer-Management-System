@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -84,8 +86,18 @@ public class MailgunInboundService {
         CustomerEntity customer = customerService.findOrCreateCustomer(sender.email(), sender.name());
         TicketEntity newTicket = ticketService.createInboundTicket(customer, subject, body, messageId);
 
-        // Dispatch asynchronous AI RAG processing
-        ticketAiProcessingService.processTicketWithAiAsync(newTicket.getId());
+        // Dispatch asynchronous AI RAG processing AFTER transaction commits
+        UUID newTicketId = newTicket.getId();
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    ticketAiProcessingService.processTicketWithAiAsync(newTicketId);
+                }
+            });
+        } else {
+            ticketAiProcessingService.processTicketWithAiAsync(newTicketId);
+        }
 
         return new WebhookProcessingResult(
                 newTicket.getId(),

@@ -160,7 +160,7 @@ public class TicketService {
         TicketEntity ticket = TicketEntity.builder()
                 .customer(customer)
                 .subject(subject != null && !subject.isBlank() ? subject.trim() : "No Subject")
-                .status(TicketStatus.NEW)
+                .status(TicketStatus.AI_PROCESSING)
                 .category(TicketCategory.UNKNOWN)
                 .build();
 

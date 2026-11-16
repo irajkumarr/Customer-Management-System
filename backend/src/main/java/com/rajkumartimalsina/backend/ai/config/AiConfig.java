@@ -2,7 +2,7 @@ package com.rajkumartimalsina.backend.ai.config;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,8 +10,11 @@ import org.springframework.context.annotation.Configuration;
 public class AiConfig {
 
     @Bean
-    @ConditionalOnBean(ChatModel.class)
-    public ChatClient chatClient(ChatModel chatModel) {
-        return ChatClient.builder(chatModel).build();
+    public ChatClient chatClient(ObjectProvider<ChatModel> chatModelProvider) {
+        ChatModel chatModel = chatModelProvider.getIfAvailable();
+        if (chatModel != null) {
+            return ChatClient.builder(chatModel).build();
+        }
+        return null;
     }
 }

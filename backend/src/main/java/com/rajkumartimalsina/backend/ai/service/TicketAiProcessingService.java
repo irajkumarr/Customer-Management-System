@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 import java.util.List;
@@ -30,20 +30,38 @@ public class TicketAiProcessingService {
     private final MessageRepository messageRepository;
     private final AiHelpdeskService aiHelpdeskService;
     private final EmailService emailService;
+    private final TransactionTemplate transactionTemplate;
 
     @Async
     public void processTicketWithAiAsync(UUID ticketId) {
         try {
-            processTicket(ticketId);
+            transactionTemplate.executeWithoutResult(status -> processTicket(ticketId));
         } catch (Exception e) {
             log.error("Failed to process ticket '{}' with AI: {}", ticketId, e.getMessage(), e);
         }
     }
 
-    @Transactional
     public void processTicket(UUID ticketId) {
-        TicketEntity ticket = ticketRepository.findByIdWithCustomer(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + ticketId));
+        TicketEntity ticket = null;
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            var found = ticketRepository.findByIdWithCustomer(ticketId);
+            if (found.isPresent()) {
+                ticket = found.get();
+                break;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        if (ticket == null) {
+            throw new ResourceNotFoundException("Ticket not found: " + ticketId);
+        }
+
+        String customerEmail = ticket.getCustomer() != null ? ticket.getCustomer().getEmail() : "unknown@example.com";
 
         List<MessageEntity> messages = messageRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
         if (messages.isEmpty()) {
@@ -59,21 +77,17 @@ public class TicketAiProcessingService {
 
         log.info("Starting AI RAG pipeline for ticket '{}' (subject: '{}')", ticketId, ticket.getSubject());
 
-        // Step 1: Transition to AI_PROCESSING
-        ticket.setStatus(TicketStatus.AI_PROCESSING);
-        ticketRepository.save(ticket);
-
-        // Step 2: Call Gemini AI RAG
+        // Step 1: Call Gemini AI RAG
         AiAgentResponse aiResponse = aiHelpdeskService.analyzeAndGenerateReply(
                 ticket.getSubject(),
                 latestCustomerMessage.getBody()
         );
 
-        // Step 3: Update Category
+        // Step 2: Update Category
         TicketCategory parsedCategory = parseCategory(aiResponse.category());
         ticket.setCategory(parsedCategory);
 
-        // Step 4: Determine next status
+        // Step 3: Determine next status
         TicketStatus targetStatus;
         if (aiResponse.requiresHuman()) {
             targetStatus = TicketStatus.ESCALATED_TO_HUMAN;
@@ -83,7 +97,7 @@ public class TicketAiProcessingService {
             log.info("Ticket '{}' auto-replied by AI.", ticketId);
         }
         ticket.setStatus(targetStatus);
-        ticketRepository.save(ticket);
+        ticket = ticketRepository.save(ticket);
 
         // Step 5: Save AI message in thread
         MessageEntity aiMessage = MessageEntity.builder()
@@ -96,7 +110,6 @@ public class TicketAiProcessingService {
         messageRepository.save(aiMessage);
 
         // Step 6: Dispatch outbound email to customer
-        String customerEmail = ticket.getCustomer().getEmail();
         String subject = "Re: [Ticket #" + ticket.getId() + "] " + ticket.getSubject();
         String inReplyTo = latestCustomerMessage.getInboundMessageId();
         List<String> references = inReplyTo != null ? List.of(inReplyTo) : List.of();

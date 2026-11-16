@@ -43,7 +43,8 @@ public class AiHelpdeskService {
 
         // If ChatClient is unavailable or API key is dummy/missing, return safe fallback
         if (chatClient == null || apiKey == null || apiKey.isBlank() || apiKey.startsWith("dummy-key")) {
-            log.info("[DEV MODE] Gemini API key not configured or ChatClient absent. Returning fallback AI response.");
+            log.info("[DEV MODE] Gemini API key not configured or ChatClient absent. Returning fallback AI response. (chatClientAvailable={}, apiKeyConfigured={}, isDummyKey={})",
+                    (chatClient != null), (apiKey != null && !apiKey.isBlank()), (apiKey != null && apiKey.startsWith("dummy-key")));
             return createFallbackResponse(subject, customerQuery, "Gemini API key not configured in development environment.");
         }
 
