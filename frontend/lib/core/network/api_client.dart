@@ -34,29 +34,6 @@ class ApiClient {
     if (!kIsWeb) {
       _dio.interceptors.add(CookieManager(_cookieJar));
     }
-
-    // Enterprise session recovery: Transparently re-authenticates single-admin session on 401
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onError: (DioException err, handler) async {
-          if (err.response?.statusCode == 401 &&
-              !err.requestOptions.path.contains(ApiConstants.login)) {
-            try {
-              final loginRes = await _dio.post(
-                ApiConstants.login,
-                data: {'username': 'admin', 'password': 'Admin@123456'},
-                options: Options(extra: {'withCredentials': true}),
-              );
-              if (loginRes.statusCode == 200) {
-                final retryRes = await _dio.fetch(err.requestOptions);
-                return handler.resolve(retryRes);
-              }
-            } catch (_) {}
-          }
-          return handler.next(err);
-        },
-      ),
-    );
   }
 
   Dio get dio => _dio;

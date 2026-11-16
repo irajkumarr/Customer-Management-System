@@ -39,13 +39,12 @@ class AppRouter {
     redirect: (context, state) {
       final authState = authCubit.state;
       final isLoggingIn = state.matchedLocation == '/login';
-      final isTicketsRoute = state.matchedLocation.startsWith('/overview');
 
       final isAuthenticated = authState is Authenticated;
       final isUnauthenticated =
           authState is Unauthenticated || authState is AuthFailure;
 
-      if (isUnauthenticated && !isLoggingIn && !isTicketsRoute) {
+      if (isUnauthenticated && !isLoggingIn) {
         return '/login';
       }
 

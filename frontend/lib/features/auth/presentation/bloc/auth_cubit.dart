@@ -35,8 +35,7 @@ class AuthCubit extends Cubit<AuthState> {
             (admin) => emit(Authenticated(admin)),
           );
         } else {
-          // Automatic single-admin session initialization for Helpdesk workspace
-          await login('admin', 'Admin@123456');
+          emit(const Unauthenticated());
         }
       },
     );
