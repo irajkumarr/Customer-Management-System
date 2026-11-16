@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/tickets/presentation/bloc/ticket_list_cubit.dart';
+import '../../features/tickets/presentation/pages/ticket_dashboard_page.dart';
+import '../di/service_locator.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   late final StreamSubscription<dynamic> _subscription;
@@ -56,19 +59,9 @@ class AppRouter {
       GoRoute(
         path: '/tickets',
         name: 'tickets',
-        builder: (context, state) => Scaffold(
-          appBar: AppBar(
-            title: const Text('Tickets Dashboard'),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () => context.read<AuthCubit>().logout(),
-              ),
-            ],
-          ),
-          body: const Center(
-            child: Text('Tickets Dashboard Placeholder'),
-          ),
+        builder: (context, state) => BlocProvider<TicketListCubit>(
+          create: (_) => sl<TicketListCubit>(),
+          child: const TicketDashboardPage(),
         ),
         routes: [
           GoRoute(

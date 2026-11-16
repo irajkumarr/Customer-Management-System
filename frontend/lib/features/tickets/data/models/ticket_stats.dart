@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/ticket_stats_entity.dart';
 
 part 'ticket_stats.freezed.dart';
 part 'ticket_stats.g.dart';
@@ -18,4 +19,18 @@ abstract class TicketStats with _$TicketStats {
   }) = _TicketStats;
 
   factory TicketStats.fromJson(Map<String, dynamic> json) => _$TicketStatsFromJson(json);
+}
+
+extension TicketStatsModelX on TicketStats {
+  TicketStatsEntity toEntity() => TicketStatsEntity(
+        total: total,
+        newTickets: newTickets,
+        aiProcessing: aiProcessing,
+        aiReplied: aiReplied,
+        escalatedToHuman: escalatedToHuman,
+        inProgress: inProgress,
+        resolved: resolved,
+        closed: closed,
+        byCategory: byCategory,
+      );
 }

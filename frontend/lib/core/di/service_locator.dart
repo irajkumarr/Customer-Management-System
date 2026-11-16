@@ -9,6 +9,12 @@ import '../../features/auth/domain/usecases/get_current_admin_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_cubit.dart';
+import '../../features/tickets/data/datasources/ticket_remote_data_source.dart';
+import '../../features/tickets/data/repositories/ticket_repository_impl.dart';
+import '../../features/tickets/domain/repositories/ticket_repository.dart';
+import '../../features/tickets/domain/usecases/get_ticket_stats_usecase.dart';
+import '../../features/tickets/domain/usecases/get_tickets_usecase.dart';
+import '../../features/tickets/presentation/bloc/ticket_list_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -49,6 +55,28 @@ Future<void> initServiceLocator({
       checkSessionStatusUseCase: sl<CheckSessionStatusUseCase>(),
       getCurrentAdminUseCase: sl<GetCurrentAdminUseCase>(),
       logoutUseCase: sl<LogoutUseCase>(),
+    ),
+  );
+
+  // Tickets - Data Source
+  sl.registerLazySingleton<TicketRemoteDataSource>(
+    () => TicketRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+  );
+
+  // Tickets - Repository
+  sl.registerLazySingleton<TicketRepository>(
+    () => TicketRepositoryImpl(remoteDataSource: sl<TicketRemoteDataSource>()),
+  );
+
+  // Tickets - Use Cases
+  sl.registerLazySingleton(() => GetTicketsUseCase(sl<TicketRepository>()));
+  sl.registerLazySingleton(() => GetTicketStatsUseCase(sl<TicketRepository>()));
+
+  // Tickets - Presentation (Cubit)
+  sl.registerFactory(
+    () => TicketListCubit(
+      getTicketsUseCase: sl<GetTicketsUseCase>(),
+      getTicketStatsUseCase: sl<GetTicketStatsUseCase>(),
     ),
   );
 

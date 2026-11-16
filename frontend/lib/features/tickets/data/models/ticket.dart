@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/ticket_entity.dart';
 import 'ticket_enums.dart';
 
 part 'ticket.freezed.dart';
@@ -19,4 +20,18 @@ abstract class Ticket with _$Ticket {
   }) = _Ticket;
 
   factory Ticket.fromJson(Map<String, dynamic> json) => _$TicketFromJson(json);
+}
+
+extension TicketModelX on Ticket {
+  TicketEntity toEntity() => TicketEntity(
+        id: id,
+        customerId: customerId,
+        customerEmail: customerEmail,
+        customerName: customerName,
+        subject: subject,
+        status: status,
+        category: category,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
 }
