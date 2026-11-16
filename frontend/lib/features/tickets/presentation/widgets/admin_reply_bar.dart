@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/helpdesk_theme_tokens.dart';
 
 class AdminReplyBar extends StatefulWidget {
   final bool isSending;
@@ -51,17 +52,15 @@ class _AdminReplyBarState extends State<AdminReplyBar> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.tokens;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         border: Border(
-          top: BorderSide(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-          ),
+          top: BorderSide(color: tokens.cardBorder),
         ),
       ),
       child: SafeArea(
@@ -85,20 +84,27 @@ class _AdminReplyBarState extends State<AdminReplyBar> {
                       maxLines: 5,
                       minLines: 1,
                       textInputAction: TextInputAction.newline,
+                      style: const TextStyle(fontSize: 13.5),
                       decoration: InputDecoration(
                         hintText: 'Type your official reply to customer...',
                         hintStyle: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                          fontSize: 13,
+                          color: tokens.subtleText,
                         ),
                         filled: true,
                         fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: tokens.cardBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: tokens.cardBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
                         ),
                       ),
                     ),
@@ -109,16 +115,15 @@ class _AdminReplyBarState extends State<AdminReplyBar> {
                   onPressed: (_canSend && !widget.isSending) ? _submit : null,
                   icon: widget.isSending
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
+                          width: 14,
+                          height: 14,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Icon(Icons.send_rounded, size: 16),
-                  label: const Text('Send & Email'),
+                      : const Icon(Icons.send_rounded, size: 15),
+                  label: const Text('Send & Email', style: TextStyle(fontSize: 12.5)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
               ],
@@ -126,14 +131,14 @@ class _AdminReplyBarState extends State<AdminReplyBar> {
             const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(Icons.email_outlined, size: 13, color: Color(0xFF64748B)),
-                const SizedBox(width: 4),
+                Icon(Icons.email_outlined, size: 13, color: tokens.subtleText),
+                const SizedBox(width: 5),
                 Expanded(
                   child: Text(
                     'Customer will receive this message as an outbound email via Mailgun.',
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      color: tokens.subtleText,
                     ),
                   ),
                 ),
@@ -142,7 +147,7 @@ class _AdminReplyBarState extends State<AdminReplyBar> {
                   style: TextStyle(
                     fontSize: 11,
                     fontStyle: FontStyle.italic,
-                    color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                    color: tokens.subtleText,
                   ),
                 ),
               ],

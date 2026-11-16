@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/helpdesk_theme_tokens.dart';
 import '../bloc/ticket_list_cubit.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/ticket_detail_pane.dart';
@@ -34,11 +35,14 @@ class _TicketDashboardPageState extends State<TicketDashboardPage> {
   Widget build(BuildContext context) {
     return ResponsiveBuilder(
       builder: (context, sizingInformation) {
-        final isDesktop = MediaQuery.sizeOf(context).width > 900;
+        final width = MediaQuery.sizeOf(context).width;
+        final isDesktopOrMedium = width >= 840;
+        final isMedium = width >= 840 && width < 1200;
 
-        if (isDesktop) {
+        if (isDesktopOrMedium) {
           return _DesktopLayout(
             selectedTicketId: widget.selectedTicketId,
+            isMedium: isMedium,
           );
         } else {
           if (widget.selectedTicketId != null) {
@@ -65,31 +69,41 @@ class _TicketDashboardPageState extends State<TicketDashboardPage> {
 
 class _DesktopLayout extends StatelessWidget {
   final String? selectedTicketId;
+  final bool isMedium;
 
-  const _DesktopLayout({this.selectedTicketId});
+  const _DesktopLayout({
+    this.selectedTicketId,
+    this.isMedium = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dividerColor = isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
+
+    final sidebarWidth = isMedium ? 68.0 : 240.0;
+    final listWidth = isMedium ? 380.0 : 400.0;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Left Column: App Sidebar (260px)
-          const SizedBox(
-            width: 260,
-            child: AppSidebar(isDrawer: false),
+          // Left Column: App Sidebar (Full or Compact Rail)
+          SizedBox(
+            width: sidebarWidth,
+            child: AppSidebar(
+              isDrawer: false,
+              isRail: isMedium,
+            ),
           ),
 
           // Divider
-          VerticalDivider(width: 1, thickness: 1, color: dividerColor),
+          VerticalDivider(width: 1, thickness: 1, color: tokens.dividerColor),
 
-          // Center Column: Ticket List Pane (420px)
+          // Center Column: Ticket List Pane
           SizedBox(
-            width: 420,
+            width: listWidth,
             child: TicketListPane(
               isDesktop: true,
               selectedTicketId: selectedTicketId,
@@ -98,9 +112,9 @@ class _DesktopLayout extends StatelessWidget {
           ),
 
           // Divider
-          VerticalDivider(width: 1, thickness: 1, color: dividerColor),
+          VerticalDivider(width: 1, thickness: 1, color: tokens.dividerColor),
 
-          // Right Column: Ticket Detail Pane (Expanded)
+          // Right Column: Ticket Detail Pane (Expanded Workspace)
           Expanded(
             child: TicketDetailPane(ticketId: selectedTicketId),
           ),

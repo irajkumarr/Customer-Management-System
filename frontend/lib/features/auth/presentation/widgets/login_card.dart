@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/helpdesk_theme_tokens.dart';
 import '../bloc/auth_state.dart';
 
 class LoginCard extends StatefulWidget {
@@ -40,88 +41,100 @@ class _LoginCardState extends State<LoginCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.tokens;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isLoading = widget.authState is AuthLoading;
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 440),
+      constraints: const BoxConstraints(maxWidth: 420),
       child: Card(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-          ),
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: tokens.cardBorder),
         ),
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Brand icon
+                // Brand Header
                 Center(
                   child: Container(
-                    width: 56,
-                    height: 56,
+                    width: 52,
+                    height: 52,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primary, Color(0xFF4F46E5)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: const Icon(
                       Icons.support_agent_rounded,
-                      size: 32,
-                      color: AppColors.primary,
+                      size: 28,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 18),
+                const Text(
                   'Helpdesk Admin',
-                  style: theme.textTheme.headlineSmall?.copyWith(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
+                    fontSize: 20,
                     letterSpacing: -0.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   'AI Customer Management Portal',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: tokens.subtleText,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
 
                 // Error alert
                 if (widget.authState is AuthFailure) ...[
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.statusEscalated.withValues(alpha: 0.1),
+                      color: tokens.statusEscalated.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppColors.statusEscalated.withValues(alpha: 0.3),
+                        color: tokens.statusEscalated.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline_rounded,
-                          color: AppColors.statusEscalated,
-                          size: 20,
+                          color: tokens.statusEscalated,
+                          size: 18,
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             (widget.authState as AuthFailure).message,
-                            style: const TextStyle(
-                              color: AppColors.statusEscalated,
-                              fontSize: 13,
+                            style: TextStyle(
+                              color: tokens.statusEscalated,
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -129,7 +142,7 @@ class _LoginCardState extends State<LoginCard> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                 ],
 
                 // Username field
@@ -140,7 +153,7 @@ class _LoginCardState extends State<LoginCard> {
                   decoration: const InputDecoration(
                     labelText: 'Username',
                     hintText: 'admin',
-                    prefixIcon: Icon(Icons.person_outline_rounded),
+                    prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -149,7 +162,7 @@ class _LoginCardState extends State<LoginCard> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
 
                 // Password field
                 TextFormField(
@@ -160,13 +173,13 @@ class _LoginCardState extends State<LoginCard> {
                   onFieldSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
-                        size: 20,
+                        size: 18,
                       ),
                       onPressed: () {
                         setState(() {
@@ -182,15 +195,15 @@ class _LoginCardState extends State<LoginCard> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 26),
+                const SizedBox(height: 24),
 
                 // Submit button
                 ElevatedButton(
                   onPressed: isLoading ? null : _submit,
                   child: isLoading
                       ? const SizedBox(
-                          width: 20,
-                          height: 20,
+                          width: 18,
+                          height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -199,7 +212,7 @@ class _LoginCardState extends State<LoginCard> {
                       : const Text(
                           'Sign In',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

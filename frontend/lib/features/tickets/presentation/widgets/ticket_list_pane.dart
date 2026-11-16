@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/helpdesk_theme_tokens.dart';
 import '../../../auth/presentation/bloc/auth_cubit.dart';
 import '../bloc/ticket_list_cubit.dart';
 import '../bloc/ticket_list_state.dart';
@@ -24,8 +25,8 @@ class TicketListPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.tokens;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final cubit = context.read<TicketListCubit>();
 
     return BlocConsumer<TicketListCubit, TicketListState>(
@@ -34,7 +35,7 @@ class TicketListPane extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.errorMessage ?? 'Failed to update tickets.'),
-              backgroundColor: AppColors.statusEscalated,
+              backgroundColor: tokens.statusEscalated,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -51,13 +52,13 @@ class TicketListPane extends StatelessWidget {
               if (isDesktop) ...[
                 SliverToBoxAdapter(
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
                     child: Row(
                       children: [
                         const Text(
-                          'Tickets',
+                          'Tickets Queue',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             letterSpacing: -0.3,
                           ),
@@ -65,10 +66,10 @@ class TicketListPane extends StatelessWidget {
                         const SizedBox(width: 8),
                         if (state.totalElements > 0)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
                               color: AppColors.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               '${state.totalElements}',
@@ -84,12 +85,12 @@ class TicketListPane extends StatelessWidget {
                         IconButton(
                           icon: state.isRefreshing
                               ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
+                                  width: 16,
+                                  height: 16,
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
-                              : const Icon(Icons.refresh_rounded, size: 20),
-                          tooltip: 'Refresh Tickets',
+                              : const Icon(Icons.refresh_rounded, size: 19),
+                          tooltip: 'Refresh Queue',
                           onPressed: state.isRefreshing ? null : () => cubit.refresh(),
                         ),
                       ],
@@ -98,7 +99,7 @@ class TicketListPane extends StatelessWidget {
                 ),
               ],
 
-              // Search Bar
+              // Search Bar (with 300ms debouncing)
               SliverToBoxAdapter(
                 child: TicketSearchBar(
                   initialQuery: state.searchQuery,
@@ -106,7 +107,7 @@ class TicketListPane extends StatelessWidget {
                 ),
               ),
 
-              // Filters Bar
+              // Filter Chips Strip
               SliverToBoxAdapter(
                 child: TicketFilterChips(
                   selectedStatus: state.selectedStatus,
@@ -115,6 +116,8 @@ class TicketListPane extends StatelessWidget {
                   onCategoryChanged: (cat) => cubit.setCategoryFilter(cat),
                 ),
               ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 4)),
 
               // Main List Content
               if (state.isLoading && state.tickets.isEmpty) ...[
@@ -133,16 +136,17 @@ class TicketListPane extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.cloud_off_rounded,
                             size: 40,
-                            color: AppColors.statusEscalated,
+                            color: tokens.statusEscalated,
                           ),
                           const SizedBox(height: 12),
-                          Text(
+                          const Text(
                             'Unable to load tickets',
-                            style: theme.textTheme.titleMedium?.copyWith(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -150,12 +154,13 @@ class TicketListPane extends StatelessWidget {
                             state.errorMessage ?? 'An unexpected error occurred.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              color: tokens.subtleText,
+                              fontSize: 13,
                             ),
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
-                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            icon: const Icon(Icons.refresh_rounded, size: 16),
                             label: const Text('Retry'),
                             onPressed: () => cubit.loadInitialData(),
                           ),
@@ -176,13 +181,14 @@ class TicketListPane extends StatelessWidget {
                           Icon(
                             Icons.search_off_rounded,
                             size: 40,
-                            color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                            color: tokens.subtleText,
                           ),
                           const SizedBox(height: 12),
-                          Text(
+                          const Text(
                             'No tickets found',
-                            style: theme.textTheme.titleMedium?.copyWith(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -190,11 +196,12 @@ class TicketListPane extends StatelessWidget {
                             state.searchQuery.isNotEmpty ||
                                     state.selectedStatus != null ||
                                     state.selectedCategory != null
-                                ? 'Try adjusting your filters or search.'
+                                ? 'Try adjusting your filters or search terms.'
                                 : 'No tickets in the system yet.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              color: tokens.subtleText,
+                              fontSize: 13,
                             ),
                           ),
                         ],
@@ -224,21 +231,28 @@ class TicketListPane extends StatelessWidget {
                 // Pagination Row
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Page ${state.currentPage + 1} of ${state.totalPages == 0 ? 1 : state.totalPages} (${state.totalElements} total)',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        Expanded(
+                          child: Text(
+                            'Page ${state.currentPage + 1} of ${state.totalPages == 0 ? 1 : state.totalPages} (${state.totalElements} total)',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: tokens.subtleText,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton.outlined(
                               icon: const Icon(Icons.chevron_left_rounded, size: 18),
                               visualDensity: VisualDensity.compact,
+                              tooltip: 'Previous page',
                               onPressed: state.currentPage > 0
                                   ? () => cubit.changePage(state.currentPage - 1)
                                   : null,
@@ -247,6 +261,7 @@ class TicketListPane extends StatelessWidget {
                             IconButton.outlined(
                               icon: const Icon(Icons.chevron_right_rounded, size: 18),
                               visualDensity: VisualDensity.compact,
+                              tooltip: 'Next page',
                               onPressed: state.currentPage < state.totalPages - 1
                                   ? () => cubit.changePage(state.currentPage + 1)
                                   : null,
@@ -279,14 +294,14 @@ class TicketListPane extends StatelessWidget {
             ),
             title: const Text(
               'Tickets Dashboard',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             actions: [
               IconButton(
                 icon: state.isRefreshing
                     ? const SizedBox(
-                        width: 18,
-                        height: 18,
+                        width: 16,
+                        height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.refresh_rounded),

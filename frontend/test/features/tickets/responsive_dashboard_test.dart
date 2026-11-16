@@ -301,6 +301,25 @@ void main() {
       expect(find.text('Hello, I was charged twice for renewal.'), findsOneWidget);
     });
 
+    testWidgets('Medium desktop/tablet view (840px - 1199px) displays compact Rail sidebar and Detail pane',
+        (tester) async {
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          child: const TicketDashboardPage(selectedTicketId: '1'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppSidebar), findsOneWidget);
+      expect(find.byType(TicketListPane), findsOneWidget);
+      expect(find.byType(TicketDetailPane), findsOneWidget);
+      expect(find.text('Ticket #1'), findsOneWidget);
+    });
+
     testWidgets('AdminReplyBar submits on Ctrl+Enter keyboard shortcut', (tester) async {
       String? submittedText;
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 class TicketSearchBar extends StatefulWidget {
@@ -16,6 +17,7 @@ class TicketSearchBar extends StatefulWidget {
 
 class _TicketSearchBarState extends State<TicketSearchBar> {
   late final TextEditingController _controller;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -33,38 +35,51 @@ class _TicketSearchBarState extends State<TicketSearchBar> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onQueryChanged(String query) {
+    setState(() {});
+    _debounceTimer?.cancel();
+    if (query.isEmpty) {
+      widget.onSearch('');
+      return;
+    }
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      widget.onSearch(query.trim());
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       child: TextField(
         controller: _controller,
         textInputAction: TextInputAction.search,
-        onSubmitted: (query) => widget.onSearch(query),
+        onSubmitted: (query) {
+          _debounceTimer?.cancel();
+          widget.onSearch(query.trim());
+        },
         decoration: InputDecoration(
-          hintText: 'Search tickets by subject, customer name or email...',
-          prefixIcon: const Icon(Icons.search, size: 20),
+          hintText: 'Search tickets by subject, customer, email...',
+          prefixIcon: const Icon(Icons.search_rounded, size: 18),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, size: 18),
+                  icon: const Icon(Icons.close_rounded, size: 16),
+                  tooltip: 'Clear search',
                   onPressed: () {
                     _controller.clear();
+                    _debounceTimer?.cancel();
                     widget.onSearch('');
                   },
                 )
               : null,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         ),
-        onChanged: (text) {
-          setState(() {});
-          if (text.isEmpty) {
-            widget.onSearch('');
-          }
-        },
+        onChanged: _onQueryChanged,
       ),
     );
   }
