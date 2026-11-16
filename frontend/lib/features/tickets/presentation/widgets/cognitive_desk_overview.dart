@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/helpdesk_theme_tokens.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -79,7 +80,10 @@ class CognitiveDeskOverview extends StatelessWidget {
                     children: [
                       // Live 24h Pill
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -87,7 +91,11 @@ class CognitiveDeskOverview extends StatelessWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.circle, size: 6, color: Color(0xFF10B981)),
+                            Icon(
+                              Icons.circle,
+                              size: 6,
+                              color: Color(0xFF10B981),
+                            ),
                             SizedBox(width: 5),
                             Text(
                               'Live 24h',
@@ -102,24 +110,6 @@ class CognitiveDeskOverview extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
 
-                      // Range selector: 24h | 7d | 30d
-                      Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: tokens.cardBorder),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _RangePill(label: '24h', isSelected: true),
-                            _RangePill(label: '7d', isSelected: false),
-                            _RangePill(label: '30d', isSelected: false),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-
                       // Manual Refresh / Export
                       IconButton.outlined(
                         visualDensity: VisualDensity.compact,
@@ -127,7 +117,9 @@ class CognitiveDeskOverview extends StatelessWidget {
                             ? const SizedBox(
                                 width: 14,
                                 height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.refresh_rounded, size: 16),
                         tooltip: 'Refresh Metrics (REST)',
@@ -257,10 +249,7 @@ class CognitiveDeskOverview extends StatelessWidget {
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          flex: 65,
-                          child: _TicketVolumeChartCard(),
-                        ),
+                        Expanded(flex: 65, child: _TicketVolumeChartCard()),
                         const SizedBox(width: 14),
                         Expanded(
                           flex: 35,
@@ -420,10 +409,7 @@ class _KpiMetricCard extends StatelessWidget {
             subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11,
-              color: tokens.subtleText,
-            ),
+            style: TextStyle(fontSize: 11, color: tokens.subtleText),
           ),
         ],
       ),
@@ -488,7 +474,11 @@ class _TicketVolumeChartCard extends StatelessWidget {
                 children: [
                   const Text(
                     'Ticket Volume & Triage',
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, letterSpacing: -0.2),
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -502,11 +492,17 @@ class _TicketVolumeChartCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.circle, size: 7, color: Color(0xFF4F46E5)),
                   const SizedBox(width: 4),
-                  const Text('AI Auto-Reply', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                  const Text(
+                    'AI Auto-Reply',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
                   const SizedBox(width: 10),
                   const Icon(Icons.circle, size: 7, color: Color(0xFFC7D2FE)),
                   const SizedBox(width: 4),
-                  Text('Total Inbound', style: TextStyle(fontSize: 11, color: tokens.subtleText)),
+                  Text(
+                    'Total Inbound',
+                    style: TextStyle(fontSize: 11, color: tokens.subtleText),
+                  ),
                 ],
               ),
             ],
@@ -559,7 +555,9 @@ class _AxisLabel extends StatelessWidget {
       style: TextStyle(
         fontSize: 10,
         fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w500,
-        color: isHighlighted ? const Color(0xFF4F46E5) : const Color(0xFF94A3B8),
+        color: isHighlighted
+            ? const Color(0xFF4F46E5)
+            : const Color(0xFF94A3B8),
       ),
     );
   }
@@ -623,7 +621,9 @@ class _AreaChartPainter extends CustomPainter {
       ..close();
 
     final aiFillPaint = Paint()
-      ..shader = aiGradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..shader = aiGradient.createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      )
       ..style = PaintingStyle.fill;
     canvas.drawPath(aiFillPath, aiFillPaint);
 
@@ -701,10 +701,7 @@ class _CategoryDonutCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             'Distribution across key domains',
-            style: TextStyle(
-              fontSize: 11.5,
-              color: tokens.subtleText,
-            ),
+            style: TextStyle(fontSize: 11.5, color: tokens.subtleText),
           ),
           const SizedBox(height: 16),
 
@@ -724,7 +721,9 @@ class _CategoryDonutCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        totalCount >= 1000 ? '${(totalCount / 1000).toStringAsFixed(1)}k' : '$totalCount',
+                        totalCount >= 1000
+                            ? '${(totalCount / 1000).toStringAsFixed(1)}k'
+                            : '$totalCount',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -749,13 +748,29 @@ class _CategoryDonutCard extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Category Legend breakdown
-          _CategoryLegendRow(color: const Color(0xFF4F46E5), label: 'Billing', percentage: '38%'),
+          _CategoryLegendRow(
+            color: const Color(0xFF4F46E5),
+            label: 'Billing',
+            percentage: '38%',
+          ),
           const SizedBox(height: 6),
-          _CategoryLegendRow(color: const Color(0xFF0D9488), label: 'Technical', percentage: '32%'),
+          _CategoryLegendRow(
+            color: const Color(0xFF0D9488),
+            label: 'Technical',
+            percentage: '32%',
+          ),
           const SizedBox(height: 6),
-          _CategoryLegendRow(color: const Color(0xFF3B82F6), label: 'Account Access', percentage: '20%'),
+          _CategoryLegendRow(
+            color: const Color(0xFF3B82F6),
+            label: 'Account Access',
+            percentage: '20%',
+          ),
           const SizedBox(height: 6),
-          _CategoryLegendRow(color: const Color(0xFF64748B), label: 'General', percentage: '10%'),
+          _CategoryLegendRow(
+            color: const Color(0xFF64748B),
+            label: 'General',
+            percentage: '10%',
+          ),
         ],
       ),
     );
@@ -891,7 +906,13 @@ class _RecentTicketsTableCard extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: onViewAll,
-                  child: const Text('View all', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5)),
+                  child: const Text(
+                    'View all',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11.5,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -908,7 +929,10 @@ class _RecentTicketsTableCard extends StatelessWidget {
                 Expanded(flex: 5, child: _buildColHeader('SUBJECT')),
                 Expanded(flex: 2, child: _buildColHeader('STATUS')),
                 Expanded(flex: 2, child: _buildColHeader('CATEGORY')),
-                Expanded(flex: 2, child: _buildColHeader('TIME', align: TextAlign.right)),
+                Expanded(
+                  flex: 2,
+                  child: _buildColHeader('TIME', align: TextAlign.right),
+                ),
               ],
             ),
           ),
@@ -970,14 +994,15 @@ class _RecentTicketRowState extends State<_RecentTicketRow> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final ticket = widget.ticket;
 
-    final customerName = ticket.customerName != null && ticket.customerName!.isNotEmpty
+    final customerName =
+        ticket.customerName != null && ticket.customerName!.isNotEmpty
         ? ticket.customerName!
         : ticket.customerEmail.split('@').first;
     final initials = customerName.length >= 2
         ? customerName.substring(0, 2).toUpperCase()
         : customerName.isNotEmpty
-            ? customerName.substring(0, 1).toUpperCase()
-            : 'AC';
+        ? customerName.substring(0, 1).toUpperCase()
+        : 'AC';
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -1002,7 +1027,9 @@ class _RecentTicketRowState extends State<_RecentTicketRow> {
                   children: [
                     CircleAvatar(
                       radius: 11,
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                      backgroundColor: AppColors.primary.withValues(
+                        alpha: 0.12,
+                      ),
                       child: Text(
                         initials,
                         style: const TextStyle(
@@ -1051,7 +1078,10 @@ class _RecentTicketRowState extends State<_RecentTicketRow> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2.5,
+                    ),
                     decoration: BoxDecoration(
                       color: ticket.status.color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(5),
@@ -1073,10 +1103,7 @@ class _RecentTicketRowState extends State<_RecentTicketRow> {
                 flex: 2,
                 child: Text(
                   ticket.category.displayName,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    color: tokens.subtleText,
-                  ),
+                  style: TextStyle(fontSize: 11.5, color: tokens.subtleText),
                 ),
               ),
 
@@ -1086,10 +1113,7 @@ class _RecentTicketRowState extends State<_RecentTicketRow> {
                 child: Text(
                   DateFormatter.formatRelativeOrTime(ticket.updatedAt),
                   textAlign: TextAlign.right,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: tokens.subtleText,
-                  ),
+                  style: TextStyle(fontSize: 11, color: tokens.subtleText),
                 ),
               ),
             ],

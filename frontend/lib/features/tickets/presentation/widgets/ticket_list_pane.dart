@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/helpdesk_theme_tokens.dart';
-import '../../../auth/presentation/bloc/auth_cubit.dart';
 import '../bloc/ticket_list_cubit.dart';
 import '../bloc/ticket_list_state.dart';
 import 'ticket_filter_chips.dart';
@@ -42,280 +41,219 @@ class TicketListPane extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        final content = RefreshIndicator(
-          onRefresh: () => cubit.refresh(),
-          color: AppColors.primary,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              // Desktop Header Bar
-              if (isDesktop) ...[
-                SliverToBoxAdapter(
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-                    child: Row(
-                      children: [
-                        const Text(
-                          'Tickets Queue',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if (state.totalElements > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '${state.totalElements}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        const Spacer(),
-                        // Manual Refresh Button (Rule: No WebSockets/Polling)
-                        IconButton(
-                          icon: state.isRefreshing
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.refresh_rounded, size: 19),
-                          tooltip: 'Refresh Queue',
-                          onPressed: state.isRefreshing ? null : () => cubit.refresh(),
-                        ),
-                      ],
-                    ),
-                  ),
+        return Container(
+          color: isDark ? AppColors.surfaceDark : Colors.white,
+          child: Column(
+            children: [
+              // Queue Header Bar
+              Container(
+                height: 54,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: tokens.dividerColor)),
                 ),
-              ],
+                child: Row(
+                  children: [
+                    if (!isDesktop && onOpenDrawer != null) ...[
+                      IconButton(
+                        icon: const Icon(Icons.menu_rounded, size: 20),
+                        onPressed: onOpenDrawer,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                    Text(
+                      'Tickets',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                        color: isDark ? Colors.white : AppColors.neutral950,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (state.totalElements > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: tokens.cardBorder, width: 0.8),
+                        ),
+                        child: Text(
+                          '${state.totalElements}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : AppColors.neutral950,
+                          ),
+                        ),
+                      ),
+                    const Spacer(),
+                    // Manual REST Refresh Button
+                    IconButton(
+                      icon: state.isRefreshing
+                          ? SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.8,
+                                color: isDark ? Colors.white : AppColors.neutral950,
+                              ),
+                            )
+                          : Icon(
+                              Icons.refresh_rounded,
+                              size: 17,
+                              color: tokens.subtleText,
+                            ),
+                      tooltip: 'Refresh Queue (REST)',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: state.isRefreshing ? null : () => cubit.refresh(),
+                    ),
+                  ],
+                ),
+              ),
 
-              // Search Bar (with 300ms debouncing)
-              SliverToBoxAdapter(
+              // Search Box
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
                 child: TicketSearchBar(
                   initialQuery: state.searchQuery,
-                  onSearch: (query) => cubit.setSearchQuery(query),
+                  onSearch: (q) => cubit.setSearchQuery(q),
                 ),
               ),
 
-              // Filter Chips Strip
-              SliverToBoxAdapter(
-                child: TicketFilterChips(
-                  selectedStatus: state.selectedStatus,
-                  selectedCategory: state.selectedCategory,
-                  onStatusChanged: (status) => cubit.setStatusFilter(status),
-                  onCategoryChanged: (cat) => cubit.setCategoryFilter(cat),
-                ),
+              // Filter Dropdowns
+              TicketFilterChips(
+                selectedStatus: state.selectedStatus,
+                selectedCategory: state.selectedCategory,
+                onStatusChanged: (s) => cubit.setStatusFilter(s),
+                onCategoryChanged: (c) => cubit.setCategoryFilter(c),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 4)),
+              // Hairline separator before list
+              Divider(height: 1, thickness: 1, color: tokens.dividerColor),
 
-              // Main List Content
-              if (state.isLoading && state.tickets.isEmpty) ...[
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
+              // Ticket List Stream
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => cubit.refresh(),
+                  color: AppColors.neutral900,
+                  child: _buildQueueContent(context, state, cubit, tokens, isDark),
                 ),
-              ] else if (state.hasError && state.tickets.isEmpty) ...[
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.cloud_off_rounded,
-                            size: 40,
-                            color: tokens.statusEscalated,
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Unable to load tickets',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            state.errorMessage ?? 'An unexpected error occurred.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: tokens.subtleText,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.refresh_rounded, size: 16),
-                            label: const Text('Retry'),
-                            onPressed: () => cubit.loadInitialData(),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ] else if (state.isEmpty) ...[
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.search_off_rounded,
-                            size: 40,
-                            color: tokens.subtleText,
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No tickets found',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            state.searchQuery.isNotEmpty ||
-                                    state.selectedStatus != null ||
-                                    state.selectedCategory != null
-                                ? 'Try adjusting your filters or search terms.'
-                                : 'No tickets in the system yet.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: tokens.subtleText,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ] else ...[
-                // Ticket Items
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final ticket = state.tickets[index];
-                      final isSelected = selectedTicketId != null &&
-                          selectedTicketId == ticket.id.toString();
-
-                      return TicketListItem(
-                        ticket: ticket,
-                        isSelected: isSelected,
-                        onTap: () => onTicketSelected(ticket.id.toString()),
-                      );
-                    },
-                    childCount: state.tickets.length,
-                  ),
-                ),
-
-                // Pagination Row
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Page ${state.currentPage + 1} of ${state.totalPages == 0 ? 1 : state.totalPages} (${state.totalElements} total)',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: tokens.subtleText,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton.outlined(
-                              icon: const Icon(Icons.chevron_left_rounded, size: 18),
-                              visualDensity: VisualDensity.compact,
-                              tooltip: 'Previous page',
-                              onPressed: state.currentPage > 0
-                                  ? () => cubit.changePage(state.currentPage - 1)
-                                  : null,
-                            ),
-                            const SizedBox(width: 8),
-                            IconButton.outlined(
-                              icon: const Icon(Icons.chevron_right_rounded, size: 18),
-                              visualDensity: VisualDensity.compact,
-                              tooltip: 'Next page',
-                              onPressed: state.currentPage < state.totalPages - 1
-                                  ? () => cubit.changePage(state.currentPage + 1)
-                                  : null,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ],
           ),
         );
+      },
+    );
+  }
 
-        if (isDesktop) {
-          return Container(
-            color: isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC),
-            child: content,
-          );
-        }
+  Widget _buildQueueContent(
+    BuildContext context,
+    TicketListState state,
+    TicketListCubit cubit,
+    HelpdeskThemeTokens tokens,
+    bool isDark,
+  ) {
+    if (state.isLoading && state.tickets.isEmpty) {
+      return Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: isDark ? Colors.white : AppColors.neutral900,
+          ),
+        ),
+      );
+    }
 
-        return Scaffold(
-          backgroundColor: isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC),
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.menu_rounded),
-              tooltip: 'Open Menu',
-              onPressed: onOpenDrawer,
-            ),
-            title: const Text(
-              'Tickets Dashboard',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            actions: [
-              IconButton(
-                icon: state.isRefreshing
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.refresh_rounded),
-                tooltip: 'Refresh Tickets',
-                onPressed: state.isRefreshing ? null : () => cubit.refresh(),
+    if (state.hasError && state.tickets.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                size: 32,
+                color: tokens.statusEscalated,
               ),
-              IconButton(
-                icon: const Icon(Icons.logout_rounded),
-                tooltip: 'Sign Out',
-                onPressed: () => context.read<AuthCubit>().logout(),
+              const SizedBox(height: 10),
+              Text(
+                'Unable to load tickets',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppColors.neutral950,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                state.errorMessage ?? 'Please check your connection and try again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: tokens.subtleText),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.refresh_rounded, size: 14),
+                label: const Text('Retry'),
+                onPressed: () => cubit.refresh(),
               ),
             ],
           ),
-          body: content,
+        ),
+      );
+    }
+
+    if (state.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.inbox_outlined,
+                size: 32,
+                color: tokens.subtleText,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'No tickets found',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppColors.neutral950,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                state.searchQuery.isNotEmpty || state.selectedStatus != null
+                    ? 'Try clearing your filters or search query.'
+                    : 'The ticket queue is currently empty.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: tokens.subtleText),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: state.tickets.length,
+      itemBuilder: (context, index) {
+        final ticket = state.tickets[index];
+        final isSelected = ticket.id == selectedTicketId;
+
+        return TicketListItem(
+          ticket: ticket,
+          isSelected: isSelected,
+          onTap: () => onTicketSelected(ticket.id),
         );
       },
     );

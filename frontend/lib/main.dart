@@ -10,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initServiceLocator();
 
-  // Check existing session status on application launch
+  // Check existing session status on application launch (non-blocking)
   sl<AuthCubit>().checkAuthStatus();
 
   runApp(const CustomerManagementApp());

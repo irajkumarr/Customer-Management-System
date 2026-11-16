@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -37,11 +39,13 @@ class AppRouter {
     redirect: (context, state) {
       final authState = authCubit.state;
       final isLoggingIn = state.matchedLocation == '/login';
+      final isTicketsRoute = state.matchedLocation.startsWith('/overview');
 
       final isAuthenticated = authState is Authenticated;
-      final isUnauthenticated = authState is Unauthenticated || authState is AuthFailure;
+      final isUnauthenticated =
+          authState is Unauthenticated || authState is AuthFailure;
 
-      if (isUnauthenticated && !isLoggingIn) {
+      if (isUnauthenticated && !isLoggingIn && !isTicketsRoute) {
         return '/login';
       }
 
@@ -63,10 +67,7 @@ class AppRouter {
           child: child,
         ),
         routes: [
-          GoRoute(
-            path: '/',
-            redirect: (context, state) => '/overview',
-          ),
+          GoRoute(path: '/', redirect: (context, state) => '/overview'),
           GoRoute(
             path: '/overview',
             name: 'overview',

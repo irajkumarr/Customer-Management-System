@@ -3,7 +3,7 @@ import '../constants/app_colors.dart';
 
 @immutable
 class HelpdeskThemeTokens extends ThemeExtension<HelpdeskThemeTokens> {
-  // Status Colors
+  // Status Foreground Colors
   final Color statusNew;
   final Color statusAiProcessing;
   final Color statusAiReplied;
@@ -11,6 +11,14 @@ class HelpdeskThemeTokens extends ThemeExtension<HelpdeskThemeTokens> {
   final Color statusInProgress;
   final Color statusResolved;
   final Color statusClosed;
+
+  // Status Backgrounds & Borders
+  final Color statusEscalatedBg;
+  final Color statusEscalatedBorder;
+  final Color statusAiRepliedBg;
+  final Color statusAiRepliedBorder;
+  final Color statusInProgressBg;
+  final Color statusInProgressBorder;
 
   // Category Colors
   final Color categoryBilling;
@@ -43,6 +51,12 @@ class HelpdeskThemeTokens extends ThemeExtension<HelpdeskThemeTokens> {
     required this.statusInProgress,
     required this.statusResolved,
     required this.statusClosed,
+    required this.statusEscalatedBg,
+    required this.statusEscalatedBorder,
+    required this.statusAiRepliedBg,
+    required this.statusAiRepliedBorder,
+    required this.statusInProgressBg,
+    required this.statusInProgressBorder,
     required this.categoryBilling,
     required this.categoryTechnical,
     required this.categoryAccount,
@@ -70,54 +84,66 @@ class HelpdeskThemeTokens extends ThemeExtension<HelpdeskThemeTokens> {
     statusInProgress: AppColors.statusInProgress,
     statusResolved: AppColors.statusResolved,
     statusClosed: AppColors.statusClosed,
+    statusEscalatedBg: AppColors.statusEscalatedBg,
+    statusEscalatedBorder: AppColors.statusEscalatedBorder,
+    statusAiRepliedBg: AppColors.statusAiRepliedBg,
+    statusAiRepliedBorder: AppColors.statusAiRepliedBorder,
+    statusInProgressBg: AppColors.statusInProgressBg,
+    statusInProgressBorder: AppColors.statusInProgressBorder,
     categoryBilling: AppColors.categoryBilling,
     categoryTechnical: AppColors.categoryTechnical,
     categoryAccount: AppColors.categoryAccount,
     categoryGeneral: AppColors.categoryGeneral,
     categoryUnknown: AppColors.categoryUnknown,
     customerBubbleBg: Colors.white,
-    customerBubbleBorder: Color(0xFFE5E7EB),
-    aiBubbleBg: Color(0xFFFAF5FF),
-    aiBubbleBorder: Color(0xFFE9D5FF),
-    adminBubbleBg: Color(0xFFEEF2FF),
-    adminBubbleBorder: Color(0xFFC7D2FE),
-    sidebarBg: Colors.white,
-    sidebarBorder: Color(0xFFF1F5F9),
-    cardBorder: Color(0xFFE5E7EB),
-    cardHoverBorder: Color(0xFFCBD5E1),
-    subtleText: Color(0xFF6B7280),
-    dividerColor: Color(0xFFF1F5F9),
+    customerBubbleBorder: AppColors.neutral200,
+    aiBubbleBg: Color(0xFFFAFAFA),
+    aiBubbleBorder: AppColors.neutral200,
+    adminBubbleBg: Color(0xFFFAFAFA),
+    adminBubbleBorder: AppColors.neutral200,
+    sidebarBg: Color(0xFFFAFAFA),
+    sidebarBorder: AppColors.neutral200,
+    cardBorder: AppColors.neutral200,
+    cardHoverBorder: AppColors.neutral300,
+    subtleText: AppColors.neutral500,
+    dividerColor: AppColors.neutral200,
   );
 
   static const HelpdeskThemeTokens dark = HelpdeskThemeTokens(
-    statusNew: Color(0xFF818CF8),
-    statusAiProcessing: Color(0xFFA78BFA),
-    statusAiReplied: Color(0xFF34D399),
-    statusEscalated: Color(0xFFFBBF24),
-    statusInProgress: Color(0xFF60A5FA),
-    statusResolved: Color(0xFF34D399),
-    statusClosed: Color(0xFF9CA3AF),
-    categoryBilling: Color(0xFF818CF8),
-    categoryTechnical: Color(0xFF2DD4BF),
-    categoryAccount: Color(0xFF38BDF8),
-    categoryGeneral: Color(0xFF94A3B8),
-    categoryUnknown: Color(0xFF64748B),
-    customerBubbleBg: Color(0xFF1E293B),
-    customerBubbleBorder: Color(0xFF334155),
-    aiBubbleBg: Color(0xFF2E1065),
-    aiBubbleBorder: Color(0xFF581C87),
-    adminBubbleBg: Color(0xFF1E1B4B),
-    adminBubbleBorder: Color(0xFF3730A3),
-    sidebarBg: Color(0xFF0F172A),
-    sidebarBorder: Color(0xFF1E293B),
-    cardBorder: Color(0xFF334155),
-    cardHoverBorder: Color(0xFF475569),
-    subtleText: Color(0xFF94A3B8),
-    dividerColor: Color(0xFF1E293B),
+    statusNew: Color(0xFFA5B4FC),
+    statusAiProcessing: Color(0xFFC4B5FD),
+    statusAiReplied: Color(0xFF86EFAC),
+    statusEscalated: Color(0xFFFCA5A5),
+    statusInProgress: Color(0xFF93C5FD),
+    statusResolved: Color(0xFF86EFAC),
+    statusClosed: Color(0xFFA1A1AA),
+    statusEscalatedBg: Color(0xFF450A0A),
+    statusEscalatedBorder: Color(0xFF991B1B),
+    statusAiRepliedBg: Color(0xFF052E16),
+    statusAiRepliedBorder: Color(0xFF166534),
+    statusInProgressBg: Color(0xFF172554),
+    statusInProgressBorder: Color(0xFF1E40AF),
+    categoryBilling: Color(0xFFA5B4FC),
+    categoryTechnical: Color(0xFF5EEAD4),
+    categoryAccount: Color(0xFF93C5FD),
+    categoryGeneral: Color(0xFFA1A1AA),
+    categoryUnknown: Color(0xFF71717A),
+    customerBubbleBg: Color(0xFF18181B),
+    customerBubbleBorder: Color(0xFF27272A),
+    aiBubbleBg: Color(0xFF121215),
+    aiBubbleBorder: Color(0xFF27272A),
+    adminBubbleBg: Color(0xFF121215),
+    adminBubbleBorder: Color(0xFF27272A),
+    sidebarBg: Color(0xFF121215),
+    sidebarBorder: Color(0xFF27272A),
+    cardBorder: Color(0xFF27272A),
+    cardHoverBorder: Color(0xFF3F3F46),
+    subtleText: Color(0xFFA1A1AA),
+    dividerColor: Color(0xFF27272A),
   );
 
   @override
-  ThemeExtension<HelpdeskThemeTokens> copyWith({
+  HelpdeskThemeTokens copyWith({
     Color? statusNew,
     Color? statusAiProcessing,
     Color? statusAiReplied,
@@ -125,6 +151,12 @@ class HelpdeskThemeTokens extends ThemeExtension<HelpdeskThemeTokens> {
     Color? statusInProgress,
     Color? statusResolved,
     Color? statusClosed,
+    Color? statusEscalatedBg,
+    Color? statusEscalatedBorder,
+    Color? statusAiRepliedBg,
+    Color? statusAiRepliedBorder,
+    Color? statusInProgressBg,
+    Color? statusInProgressBorder,
     Color? categoryBilling,
     Color? categoryTechnical,
     Color? categoryAccount,
@@ -151,6 +183,12 @@ class HelpdeskThemeTokens extends ThemeExtension<HelpdeskThemeTokens> {
       statusInProgress: statusInProgress ?? this.statusInProgress,
       statusResolved: statusResolved ?? this.statusResolved,
       statusClosed: statusClosed ?? this.statusClosed,
+      statusEscalatedBg: statusEscalatedBg ?? this.statusEscalatedBg,
+      statusEscalatedBorder: statusEscalatedBorder ?? this.statusEscalatedBorder,
+      statusAiRepliedBg: statusAiRepliedBg ?? this.statusAiRepliedBg,
+      statusAiRepliedBorder: statusAiRepliedBorder ?? this.statusAiRepliedBorder,
+      statusInProgressBg: statusInProgressBg ?? this.statusInProgressBg,
+      statusInProgressBorder: statusInProgressBorder ?? this.statusInProgressBorder,
       categoryBilling: categoryBilling ?? this.categoryBilling,
       categoryTechnical: categoryTechnical ?? this.categoryTechnical,
       categoryAccount: categoryAccount ?? this.categoryAccount,
@@ -172,10 +210,7 @@ class HelpdeskThemeTokens extends ThemeExtension<HelpdeskThemeTokens> {
   }
 
   @override
-  ThemeExtension<HelpdeskThemeTokens> lerp(
-    covariant ThemeExtension<HelpdeskThemeTokens>? other,
-    double t,
-  ) {
+  HelpdeskThemeTokens lerp(ThemeExtension<HelpdeskThemeTokens>? other, double t) {
     if (other is! HelpdeskThemeTokens) return this;
     return HelpdeskThemeTokens(
       statusNew: Color.lerp(statusNew, other.statusNew, t)!,
@@ -185,6 +220,12 @@ class HelpdeskThemeTokens extends ThemeExtension<HelpdeskThemeTokens> {
       statusInProgress: Color.lerp(statusInProgress, other.statusInProgress, t)!,
       statusResolved: Color.lerp(statusResolved, other.statusResolved, t)!,
       statusClosed: Color.lerp(statusClosed, other.statusClosed, t)!,
+      statusEscalatedBg: Color.lerp(statusEscalatedBg, other.statusEscalatedBg, t)!,
+      statusEscalatedBorder: Color.lerp(statusEscalatedBorder, other.statusEscalatedBorder, t)!,
+      statusAiRepliedBg: Color.lerp(statusAiRepliedBg, other.statusAiRepliedBg, t)!,
+      statusAiRepliedBorder: Color.lerp(statusAiRepliedBorder, other.statusAiRepliedBorder, t)!,
+      statusInProgressBg: Color.lerp(statusInProgressBg, other.statusInProgressBg, t)!,
+      statusInProgressBorder: Color.lerp(statusInProgressBorder, other.statusInProgressBorder, t)!,
       categoryBilling: Color.lerp(categoryBilling, other.categoryBilling, t)!,
       categoryTechnical: Color.lerp(categoryTechnical, other.categoryTechnical, t)!,
       categoryAccount: Color.lerp(categoryAccount, other.categoryAccount, t)!,

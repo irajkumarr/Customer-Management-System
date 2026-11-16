@@ -42,7 +42,7 @@ class _EmptyTicketDetailPlaceholder extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+      color: isDark ? AppColors.surfaceDark : AppColors.background,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -50,37 +50,38 @@ class _EmptyTicketDetailPlaceholder extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
+                  color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFF4F4F5),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: tokens.cardBorder, width: 0.8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.inbox_outlined,
-                  size: 32,
-                  color: AppColors.primary,
+                  size: 22,
+                  color: tokens.subtleText,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Text(
-                'No Ticket Selected',
+                'No ticket selected',
                 style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  letterSpacing: -0.3,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  letterSpacing: -0.2,
+                  color: isDark ? Colors.white : AppColors.neutral950,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 340),
+                constraints: const BoxConstraints(maxWidth: 300),
                 child: Text(
-                  'Select a ticket from the list to view its complete conversation thread, inspect AI responses, and reply to the customer.',
+                  'Select a conversation from the list to review customer inquiries, inspect AI responses, and send replies.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 13,
-                    height: 1.5,
+                    fontSize: 12.5,
+                    height: 1.45,
                     color: tokens.subtleText,
                   ),
                 ),
