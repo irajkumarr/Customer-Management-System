@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'core/di/service_locator.dart';
 import 'core/router/app_router.dart';
@@ -8,6 +9,7 @@ import 'features/auth/presentation/bloc/auth_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   await initServiceLocator();
 
   // Check existing session status on application launch (non-blocking)
