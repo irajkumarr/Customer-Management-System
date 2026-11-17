@@ -1,5 +1,7 @@
 # AI Helpdesk — Autonomous Customer Management System
 
+[![Live Demo](https://img.shields.io/badge/Live%20Application-app.timalsinarajkumar.com.np-2ea44f.svg?style=for-the-badge&logo=googlechrome&logoColor=white)](https://app.timalsinarajkumar.com.np)
+
 [![Java](https://img.shields.io/badge/Java-17-orange.svg?style=flat-square&logo=openjdk)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4%20%2F%204.0-brightgreen.svg?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
 [![Spring AI](https://img.shields.io/badge/Spring%20AI-Gemini%20GenAI-blue.svg?style=flat-square&logo=google)](https://spring.io/projects/spring-ai)
@@ -8,6 +10,8 @@
 [![BLoC](https://img.shields.io/badge/State-flutter__bloc-blueviolet.svg?style=flat-square)](https://bloclibrary.dev/)
 [![Mailgun](https://img.shields.io/badge/Email-Mailgun%20API-red.svg?style=flat-square&logo=mailgun)](https://www.mailgun.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+
+> 🌐 **Live Demo Application:** [https://app.timalsinarajkumar.com.np](https://app.timalsinarajkumar.com.np)
 
 An enterprise-grade **AI-powered Customer Management & Helpdesk System** featuring automated inbound email ingestion via Mailgun, autonomous triage and retrieval-augmented generation (RAG) using Google Gemini and PostgreSQL `pgvector`, smart escalation routing, and a responsive Flutter Web admin dashboard built with Material 3.
 
@@ -381,12 +385,12 @@ Includes test suites for:
 
 ## 🚢 Production Deployment Notes
 
-1. **Cross-Origin Cookies (Render & Firebase):**
-   - When hosting frontend (e.g. Firebase Hosting) and backend (e.g. Render) on different subdomains, configure:
+1. **Cross-Origin Cookies (Render & Firebase / Custom Domain):**
+   - When hosting frontend (e.g. Firebase Hosting / Custom Domain at `https://app.timalsinarajkumar.com.np`) and backend (e.g. Render) on different subdomains, configure:
      - `SESSION_COOKIE_SAME_SITE=none`
      - `SESSION_COOKIE_SECURE=true`
-     - `SESSION_COOKIE_DOMAIN=yourdomain.com`
-     - `CORS_ALLOWED_ORIGINS=https://app.yourdomain.com`
+     - `SESSION_COOKIE_DOMAIN=timalsinarajkumar.com.np`
+     - `CORS_ALLOWED_ORIGINS=https://app.timalsinarajkumar.com.np`
 
 2. **Mailgun Webhooks:**
    - In the Mailgun dashboard, configure an **Inbound Route**:
