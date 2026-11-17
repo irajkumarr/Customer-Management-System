@@ -13,18 +13,20 @@
 
 > 🌐 **Live Demo Application:** [https://app.timalsinarajkumar.com.np](https://app.timalsinarajkumar.com.np)
 
-An enterprise-grade **AI-powered Customer Management & Helpdesk System** featuring automated inbound email ingestion via Mailgun, autonomous triage and retrieval-augmented generation (RAG) using Google Gemini and PostgreSQL `pgvector`, smart escalation routing, and a responsive Flutter Web admin dashboard built with Material 3.
+An **AI-powered Customer Management & Helpdesk System** featuring automated inbound email ingestion via Mailgun, autonomous triage and retrieval-augmented generation (RAG) using Google Gemini and PostgreSQL `pgvector`, smart escalation routing, and a responsive Flutter Web admin dashboard built with Material 3.
 
 ---
 
 ## 📸 Application Screenshots
 
-### 1. Customer Support Overview (Telemetry & Triage)
+### 1. Customer Support Overview
+
 Comprehensive real-time telemetry displaying key performance indicators (KPIs), AI resolution rates, escalation queue, recent customer interactions, and category volume distributions.
 
 ![Customer Support Overview](screenshots/Screenshot%202026-11-17%20110517.jpg)
 
 ### 2. Live Ticket Triage & Conversation Thread
+
 Three-pane operational desk showing ticket queue filters, full email conversation history, Google Gemini Markdown auto-replies, human agent response composer, and ticket metadata inspection.
 
 ![Live Ticket Triage & Conversation Thread](screenshots/Screenshot%202026-11-17%20110638.jpg)
@@ -56,10 +58,10 @@ Three-pane operational desk showing ticket queue filters, full email conversatio
 
 - **💻 Responsive Flutter Web Dashboard:**
   - Optimized for desktop multi-pane views (>900px) as well as tablet and mobile layouts.
-  - Enterprise Material 3 design tokens, color-coded status badges, and sparkline trends.
+  - Material 3 design tokens, color-coded status badges, and sparkline trends.
   - Renders AI responses with GitHub-flavored Markdown formatting.
 
-- **🔒 Enterprise Session Security:**
+- **🔒 Session Security:**
   - Single-admin session management using HTTP-only cookies (`JSESSIONID`).
   - Native support for Chrome Partitioned cookies (CHIPS) and cross-origin SameSite policies.
   - Transparent session cookie preservation on Flutter Web using `dio_cookie_manager` and `CookieJar`.
@@ -88,7 +90,7 @@ flowchart TD
         SigVerifier["HMAC-SHA256 Signature Verifier"]
         HeaderParser["Email Header & Thread Parser"]
         TicketService["Ticket & Customer Service"]
-        
+
         subgraph AI_Engine ["🧠 RAG & AI Pipeline"]
             Embedder["Gemini Vector Embeddings"]
             VectorSearch["pgvector Cosine Search (HNSW)"]
@@ -112,13 +114,13 @@ flowchart TD
     MGWebhook --> SigVerifier
     SigVerifier --> HeaderParser
     HeaderParser --> TicketService
-    
+
     TicketService --> Embedder
     Embedder --> VectorSearch
     VectorSearch <--> DBVectors
     VectorSearch --> GeminiLLM
     GeminiLLM --> TicketService
-    
+
     TicketService <--> DBRelational
     TicketService -- "Auto-Reply or Holding Email" --> MGOutbound
     MGOutbound --> UserEmail
@@ -136,13 +138,13 @@ flowchart TD
 stateDiagram-v2
     [*] --> NEW: Customer Email Ingested
     NEW --> AI_PROCESSING: Webhook Parsed
-    
+
     AI_PROCESSING --> AI_REPLIED: Confident Match (requires_human = false)
     AI_PROCESSING --> ESCALATED_TO_HUMAN: Ambiguous / Complex (requires_human = true)
-    
+
     AI_REPLIED --> ESCALATED_TO_HUMAN: Customer Replies Again
     AI_REPLIED --> RESOLVED: Auto-Resolved / Confirmed
-    
+
     ESCALATED_TO_HUMAN --> IN_PROGRESS: Admin Assigns / Investigates
     IN_PROGRESS --> RESOLVED: Admin Sends Solution
     RESOLVED --> CLOSED: Ticket Finalized
@@ -153,18 +155,18 @@ stateDiagram-v2
 
 ## 🛠️ Technology Stack
 
-| Layer | Technologies |
-|---|---|
-| **Backend Framework** | Java 17, Spring Boot 3.4 / 4.x, Spring Web |
-| **Security & Session** | Spring Security, HTTP-only Cookie (`JSESSIONID`), Partitioned SameSite Filter |
+| Layer                       | Technologies                                                                      |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| **Backend Framework**       | Java 17, Spring Boot 3.4 / 4.x, Spring Web                                        |
+| **Security & Session**      | Spring Security, HTTP-only Cookie (`JSESSIONID`), Partitioned SameSite Filter     |
 | **Database & Vector Store** | PostgreSQL 16+, `pgvector` extension (768-dimension HNSW cosine indexing), Flyway |
-| **AI / LLM Integration** | Spring AI (`spring-ai-starter-model-google-genai`), Google Gemini 1.5 Pro / Flash |
-| **Email Infrastructure** | Mailgun Inbound Webhooks (HMAC-SHA256 signature verification), Mailgun REST API |
-| **Frontend Framework** | Flutter Web (Dart 3.x), Material Design 3 |
-| **State Management** | `flutter_bloc` / Cubit |
-| **HTTP & Networking** | `dio`, `cookie_jar`, `dio_cookie_manager` |
-| **Routing & UI** | `go_router`, `responsive_builder`, `flutter_markdown_plus`, `intl` |
-| **Code Generation** | `freezed`, `json_serializable`, `build_runner` |
+| **AI / LLM Integration**    | Spring AI (`spring-ai-starter-model-google-genai`), Google Gemini 3.6 Flash |
+| **Email Infrastructure**    | Mailgun Inbound Webhooks (HMAC-SHA256 signature verification), Mailgun REST API   |
+| **Frontend Framework**      | Flutter Web (Dart 3.x), Material Design 3                                         |
+| **State Management**        | `flutter_bloc` / Cubit                                                            |
+| **HTTP & Networking**       | `dio`, `cookie_jar`, `dio_cookie_manager`                                         |
+| **Routing & UI**            | `go_router`, `responsive_builder`, `flutter_markdown_plus`, `intl`                |
+| **Code Generation**         | `freezed`, `json_serializable`, `build_runner`                                    |
 
 ---
 
@@ -217,6 +219,7 @@ customer-management-system/
 ### Prerequisites
 
 Ensure you have the following installed locally:
+
 - [Java Development Kit (JDK) 17+](https://adoptium.net/)
 - [Maven 3.9+](https://maven.apache.org/) (or use the included `./mvnw`)
 - [Flutter SDK 3.13+](https://docs.flutter.dev/get-started/install)
@@ -241,16 +244,19 @@ CREATE EXTENSION IF NOT EXISTS vector;
 ### 2. Backend Configuration & Startup
 
 1. Navigate to the backend directory:
+
    ```bash
    cd backend
    ```
 
 2. Create your environment configuration file:
+
    ```bash
    cp .env.example .env
    ```
 
 3. Populate `.env` with your credentials:
+
    ```properties
    # Database
    SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/customer_management_db
@@ -280,6 +286,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
    ```
 
 4. Build and start the Spring Boot server:
+
    ```bash
    # Unix / macOS
    ./mvnw clean spring-boot:run
@@ -295,21 +302,25 @@ CREATE EXTENSION IF NOT EXISTS vector;
 ### 3. Frontend Setup & Startup
 
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend
    ```
 
 2. Install dependencies:
+
    ```bash
    flutter pub get
    ```
 
 3. (Optional) Rebuild generated Freezed and JSON models:
+
    ```bash
    flutter pub run build_runner build --delete-conflicting-outputs
    ```
 
 4. Launch the Flutter Web client:
+
    ```bash
    flutter run -d chrome --web-port=3000
    ```
@@ -323,32 +334,36 @@ CREATE EXTENSION IF NOT EXISTS vector;
 ## 📡 REST API Reference
 
 ### Authentication
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `POST` | `/api/auth/login` | Validates admin credentials & sets `JSESSIONID` | No |
-| `POST` | `/api/auth/logout` | Invalidates session & clears auth cookie | Yes |
-| `GET` | `/api/auth/session` | Checks active session status | No |
-| `GET` | `/api/auth/me` | Retrieves logged-in admin profile | Yes |
+
+| Method | Endpoint            | Description                                     | Auth Required |
+| ------ | ------------------- | ----------------------------------------------- | ------------- |
+| `POST` | `/api/auth/login`   | Validates admin credentials & sets `JSESSIONID` | No            |
+| `POST` | `/api/auth/logout`  | Invalidates session & clears auth cookie        | Yes           |
+| `GET`  | `/api/auth/session` | Checks active session status                    | No            |
+| `GET`  | `/api/auth/me`      | Retrieves logged-in admin profile               | Yes           |
 
 ### Tickets & Triage
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `GET` | `/api/tickets` | Paginated ticket queue with search and status/category filters | Yes |
-| `GET` | `/api/tickets/{id}` | Complete ticket details with conversation thread | Yes |
-| `PATCH` | `/api/tickets/{id}/status` | Updates ticket lifecycle status | Yes |
-| `PATCH` | `/api/tickets/{id}/category` | Updates ticket category | Yes |
-| `POST` | `/api/tickets/{id}/messages` | Human agent sends reply via Mailgun API | Yes |
-| `GET` | `/api/tickets/stats` | KPI telemetry (counts, resolution rate, category breakdown) | Yes |
+
+| Method  | Endpoint                     | Description                                                    | Auth Required |
+| ------- | ---------------------------- | -------------------------------------------------------------- | ------------- |
+| `GET`   | `/api/tickets`               | Paginated ticket queue with search and status/category filters | Yes           |
+| `GET`   | `/api/tickets/{id}`          | Complete ticket details with conversation thread               | Yes           |
+| `PATCH` | `/api/tickets/{id}/status`   | Updates ticket lifecycle status                                | Yes           |
+| `PATCH` | `/api/tickets/{id}/category` | Updates ticket category                                        | Yes           |
+| `POST`  | `/api/tickets/{id}/messages` | Human agent sends reply via Mailgun API                        | Yes           |
+| `GET`   | `/api/tickets/stats`         | KPI telemetry (counts, resolution rate, category breakdown)    | Yes           |
 
 ### Customers
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `GET` | `/api/customers` | Lists customer profiles | Yes |
-| `GET` | `/api/customers/{id}` | Gets customer details and associated ticket history | Yes |
+
+| Method | Endpoint              | Description                                         | Auth Required |
+| ------ | --------------------- | --------------------------------------------------- | ------------- |
+| `GET`  | `/api/customers`      | Lists customer profiles                             | Yes           |
+| `GET`  | `/api/customers/{id}` | Gets customer details and associated ticket history | Yes           |
 
 ### Webhooks
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
+
+| Method | Endpoint                | Description                                      | Auth Required    |
+| ------ | ----------------------- | ------------------------------------------------ | ---------------- |
 | `POST` | `/api/webhooks/mailgun` | Receives inbound customer emails (HMAC verified) | No (HMAC signed) |
 
 ---
@@ -356,13 +371,16 @@ CREATE EXTENSION IF NOT EXISTS vector;
 ## 🧪 Testing
 
 ### Running Backend Tests
+
 Execute the comprehensive Spring Boot unit and integration tests:
+
 ```bash
 cd backend
 ./mvnw test
 ```
 
 Includes test suites for:
+
 - Mailgun HMAC signature validation
 - Knowledge base parsing & chunking
 - Email header threading (`In-Reply-To`, `References`)
@@ -370,13 +388,16 @@ Includes test suites for:
 - Ticket lifecycle validation & database persistence
 
 ### Running Frontend Tests
+
 Execute the Flutter BLoC and widget tests:
+
 ```bash
 cd frontend
 flutter test
 ```
 
 Includes test suites for:
+
 - BLoC/Cubit state transitions (`AuthCubit`, `TicketListCubit`, `TicketDetailCubit`)
 - Dio `CookieJar` session persistence
 - Responsive multi-pane layout breakpoints
