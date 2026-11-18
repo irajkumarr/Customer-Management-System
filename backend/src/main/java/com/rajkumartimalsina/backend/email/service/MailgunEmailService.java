@@ -17,7 +17,6 @@ import org.springframework.web.client.RestClient;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
-import java.util.List;
 import java.util.UUID;
 
 @Service
